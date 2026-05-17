@@ -7,11 +7,12 @@ use App\Http\Controllers\ElectionOptionController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\GroupMemberController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VoteController;
 use App\Http\Controllers\VoterController;
 use App\Http\Controllers\VotingItemController;
-use App\Http\Controllers\ReportController;
+use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
@@ -19,20 +20,32 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', [AdminDashboardController::class, 'index'])
-    ->middleware(['auth', 'verified', 'admin'])
-    ->name('dashboard');
-
-
-    Route::get('/run-migrations-now-ray', function () {
+Route::get('/run-migrations-now-ray', function () {
     Artisan::call('migrate', [
         '--force' => true,
     ]);
 
     Artisan::call('optimize:clear');
 
-    return nl2br(Artisan::output());
+    return '<pre>' . Artisan::output() . '</pre>';
 });
+
+Route::get('/make-ray-admin', function () {
+    $user = User::where('email', 'raymondmunene5@gmail.com')->first();
+
+    if (!$user) {
+        return 'User not found. Register first using raymondmunene5@gmail.com, then open this link again.';
+    }
+
+    $user->role = 'admin';
+    $user->save();
+
+    return 'Admin role assigned successfully to raymondmunene5@gmail.com';
+});
+
+Route::get('/dashboard', [AdminDashboardController::class, 'index'])
+    ->middleware(['auth', 'verified', 'admin'])
+    ->name('dashboard');
 
 Route::middleware(['auth'])->group(function () {
 
@@ -58,15 +71,6 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/elections/{election}/voting-items/create', [VotingItemController::class, 'create'])
             ->name('voting-items.create');
-
-        Route::get('/reports', [ReportController::class, 'index'])
-            ->name('reports.index');
-
-        Route::get('/reports/groups/{group}/pdf', [ReportController::class, 'groupPdf'])
-            ->name('reports.group.pdf');
-
-        Route::get('/elections/{election}/results/pdf', [VoteController::class, 'exportPdf'])
-            ->name('votes.results.pdf');
 
         Route::post('/elections/{election}/voting-items', [VotingItemController::class, 'store'])
             ->name('voting-items.store');
@@ -98,6 +102,15 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/audit-logs', [AuditLogController::class, 'index'])
             ->name('audit-logs.index');
+
+        Route::get('/reports', [ReportController::class, 'index'])
+            ->name('reports.index');
+
+        Route::get('/reports/groups/{group}/pdf', [ReportController::class, 'groupPdf'])
+            ->name('reports.group.pdf');
+
+        Route::get('/elections/{election}/results/pdf', [VoteController::class, 'exportPdf'])
+            ->name('votes.results.pdf');
     });
 
     Route::get('/elections/{election}/vote', [VoteController::class, 'show'])
