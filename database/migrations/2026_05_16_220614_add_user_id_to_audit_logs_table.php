@@ -8,18 +8,35 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasTable('audit_logs')) {
+            return;
+        }
+
         Schema::table('audit_logs', function (Blueprint $table) {
-            $table->foreignId('user_id')
-                ->nullable()
-                ->constrained()
-                ->nullOnDelete();
+
+            if (!Schema::hasColumn('audit_logs', 'user_id')) {
+                $table->foreignId('user_id')
+                    ->nullable()
+                    ->after('id')
+                    ->constrained()
+                    ->nullOnDelete();
+            }
+
         });
     }
 
     public function down(): void
     {
+        if (!Schema::hasTable('audit_logs')) {
+            return;
+        }
+
         Schema::table('audit_logs', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('user_id');
+
+            if (Schema::hasColumn('audit_logs', 'user_id')) {
+                $table->dropConstrainedForeignId('user_id');
+            }
+
         });
     }
 };
