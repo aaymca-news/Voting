@@ -12,6 +12,7 @@ use App\Http\Controllers\VoteController;
 use App\Http\Controllers\VoterController;
 use App\Http\Controllers\VotingItemController;
 use App\Http\Controllers\ReportController;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -21,6 +22,17 @@ Route::get('/', function () {
 Route::get('/dashboard', [AdminDashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'admin'])
     ->name('dashboard');
+
+
+    Route::get('/run-migrations-now-ray', function () {
+    Artisan::call('migrate', [
+        '--force' => true,
+    ]);
+
+    Artisan::call('optimize:clear');
+
+    return nl2br(Artisan::output());
+});
 
 Route::middleware(['auth'])->group(function () {
 
