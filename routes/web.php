@@ -58,12 +58,18 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/groups/create', [GroupController::class, 'create'])->name('groups.create');
         Route::post('/groups', [GroupController::class, 'store'])->name('groups.store');
         Route::get('/groups/{group}', [GroupController::class, 'show'])->name('groups.show');
+        Route::delete('/groups/{group}', [GroupController::class, 'destroy'])
+            ->name('groups.destroy');
+        
 
         Route::post('/groups/{group}/members', [GroupMemberController::class, 'store'])
             ->name('group-members.store');
 
         Route::delete('/groups/{group}/members/{user}', [GroupMemberController::class, 'destroy'])
             ->name('group-members.destroy');
+
+        Route::delete('/groups/{group}', [GroupController::class, 'destroy'])
+            ->name('groups.destroy');
 
         Route::get('/elections', [ElectionController::class, 'index'])->name('elections.index');
         Route::get('/elections/create', [ElectionController::class, 'create'])->name('elections.create');
@@ -74,6 +80,8 @@ Route::middleware(['auth'])->group(function () {
 
         Route::post('/elections/{election}/voting-items', [VotingItemController::class, 'store'])
             ->name('voting-items.store');
+            Route::delete('/elections/{election}', [ElectionController::class, 'destroy'])
+            ->name('elections.destroy');
 
         Route::get('/voting-items/{votingItem}/edit', [VotingItemController::class, 'edit'])
             ->name('voting-items.edit');

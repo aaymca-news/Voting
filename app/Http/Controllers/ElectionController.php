@@ -45,4 +45,20 @@ class ElectionController extends Controller
 
         return redirect()->route('elections.index')->with('success', 'Election created successfully.');
     }
+
+    public function destroy(Election $election)
+{
+    foreach ($election->votingItems as $votingItem) {
+        $votingItem->options()->delete();
+        $votingItem->delete();
+    }
+
+    $election->options()->delete();
+
+    $election->delete();
+
+    return redirect()
+        ->route('elections.index')
+        ->with('success', 'Election deleted successfully.');
+}
 }

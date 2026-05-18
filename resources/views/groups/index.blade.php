@@ -2,7 +2,7 @@
     <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex justify-between items-center mb-8">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-800">
                         Groups
@@ -14,14 +14,20 @@
                 </div>
 
                 <a href="{{ route('groups.create') }}"
-                   style="display:inline-block; background:#2563eb; color:white; padding:10px 16px; border-radius:8px; text-decoration:none;">
+                   class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg">
                     Create Group
                 </a>
             </div>
 
             @if(session('success'))
-                <div class="mb-6 text-green-700">
+                <div class="mb-6 bg-green-100 border border-green-300 text-green-800 px-4 py-3 rounded-lg">
                     {{ session('success') }}
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="mb-6 bg-red-100 border border-red-300 text-red-800 px-4 py-3 rounded-lg">
+                    {{ session('error') }}
                 </div>
             @endif
 
@@ -29,20 +35,94 @@
 
                 @forelse($groups as $group)
 
-                    <div class="border-b py-4">
+                    <div class="border-b last:border-b-0 py-6">
 
-                        <a href="{{ route('groups.show', $group) }}"
-                           class="text-xl font-semibold text-blue-600 hover:underline">
-                            {{ $group->name }}
-                        </a>
+                        <div class="flex justify-between items-center">
 
-                        <p class="text-gray-500 mt-1">
-                            {{ $group->description }}
-                        </p>
+                            {{-- LEFT SIDE --}}
+                            <div>
+                                <a href="{{ route('groups.show', $group) }}"
+                                   class="text-2xl font-bold text-blue-600 hover:text-blue-800">
+                                    {{ $group->name }}
+                                </a>
 
-                        <p class="text-gray-400 text-sm mt-2">
-                            Code: {{ $group->code }}
-                        </p>
+                                <p class="text-gray-500 mt-2">
+                                    {{ $group->description }}
+                                </p>
+
+                                <p class="text-gray-400 text-sm mt-3">
+                                    Code: {{ $group->code }}
+                                </p>
+                            </div>
+
+                            {{-- RIGHT SIDE --}}
+                            <div class="flex items-center gap-3">
+
+                                <a href="{{ route('groups.show', $group) }}"
+                                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                                    Open
+                                </a>
+
+                                {{-- DELETE BUTTON --}}
+                                <button type="button"
+                                        onclick="document.getElementById('delete-group-box-{{ $group->id }}').style.display='flex'"
+                                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
+                                    Delete
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                        {{-- DELETE POPUP --}}
+                        <div id="delete-group-box-{{ $group->id }}"
+                             style="display:none;"
+                             class="fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center">
+
+                            <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+
+                                <h2 class="text-2xl font-bold text-gray-800 mb-4">
+                                    Delete Group
+                                </h2>
+
+                                <p class="text-gray-600 mb-6">
+                                    Are you sure you want to delete this group?
+                                    This will permanently remove:
+                                </p>
+
+                                <ul class="list-disc ml-5 text-gray-600 mb-6 space-y-1">
+                                    <li>The group</li>
+                                    <li>All group memberships</li>
+                                    <li>All elections under the group</li>
+                                    <li>All motions and voting records</li>
+                                </ul>
+
+                                <div class="flex justify-end gap-3">
+
+                                    <button type="button"
+                                            onclick="document.getElementById('delete-group-box-{{ $group->id }}').style.display='none'"
+                                            class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg">
+                                        Cancel
+                                    </button>
+
+                                    <form method="POST"
+                                          action="{{ route('groups.destroy', $group) }}">
+
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <button type="submit"
+                                                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
+                                            Delete Group
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+                            </div>
+
+                        </div>
 
                     </div>
 

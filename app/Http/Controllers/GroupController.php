@@ -23,14 +23,14 @@ class GroupController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => ['required'],
-            'description' => ['nullable'],
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
         ]);
 
         Group::create([
             'name' => $request->name,
             'description' => $request->description,
-            'code' => strtolower(str_replace(' ', '-', $request->name)) . '-' . substr(md5(time()), 0, 5),
+            'code' => str($request->name)->slug() . '-' . strtolower(str()->random(5)),
         ]);
 
         return redirect()
@@ -41,32 +41,33 @@ class GroupController extends Controller
     public function show(Group $group)
     {
         $group->load([
-            'elections.votingItems.options',
-            'users'
+            'users',
+            'elections.votingItems',
         ]);
 
-        $users = User::where('role', 'voter')
-            ->orderBy('name')
-            ->get();
+        $users = User::orderBy('name')->get();
 
-        return view('groups.show', compact(
-            'group',
-            'users'
-        ));
+        return view('groups.show', compact('group', 'users'));
     }
 
-    public function addUser(Request $request, Group $group)
+    public function destroy(Group $group)
     {
-        $request->validate([
-            'user_id' => ['required', 'exists:users,id'],
-        ]);
+        $group->users()->detach();
 
-        $group->users()->syncWithoutDetaching([
-            $request->user_id
-        ]);
+        foreach ($group->elections as $election) {
+            foreach ($election->votingItems as $votingItem) {
+                $votingItem->options()->delete();
+                $votingItem->delete();
+            }
+
+            $election->options()->delete();
+            $election->delete();
+        }
+
+        $group->delete();
 
         return redirect()
-            ->back()
-            ->with('success', 'User added to group successfully.');
+            ->route('groups.index')
+            ->with('success', 'Group deleted successfully.');
     }
 }
