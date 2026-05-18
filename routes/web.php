@@ -14,8 +14,6 @@ use App\Http\Controllers\VoterController;
 use App\Http\Controllers\VotingItemController;
 use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -23,10 +21,7 @@ Route::get('/', function () {
 });
 
 Route::get('/run-migrations-now-ray', function () {
-    Artisan::call('migrate', [
-        '--force' => true,
-    ]);
-
+    Artisan::call('migrate', ['--force' => true]);
     Artisan::call('optimize:clear');
 
     return '<pre>' . Artisan::output() . '</pre>';
@@ -49,18 +44,6 @@ Route::get('/dashboard', [AdminDashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'admin'])
     ->name('dashboard');
 
-    Route::get('/fix-voting-mode-column-ray', function () {
-    if (!Schema::hasColumn('voting_items', 'voting_mode')) {
-        Schema::table('voting_items', function (Blueprint $table) {
-            $table->string('voting_mode')->default('anonymous');
-        });
-
-        return 'voting_mode column added successfully.';
-    }
-
-    return 'voting_mode column already exists.';
-});
-
 Route::middleware(['auth'])->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -78,6 +61,9 @@ Route::middleware(['auth'])->group(function () {
 
         Route::post('/groups/{group}/members', [GroupMemberController::class, 'store'])
             ->name('group-members.store');
+
+        Route::delete('/groups/{group}/members/{user}', [GroupMemberController::class, 'destroy'])
+            ->name('group-members.destroy');
 
         Route::get('/elections', [ElectionController::class, 'index'])->name('elections.index');
         Route::get('/elections/create', [ElectionController::class, 'create'])->name('elections.create');
@@ -113,6 +99,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/votes', [VoteController::class, 'index'])->name('votes.index');
 
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
+        Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
         Route::get('/audit-logs', [AuditLogController::class, 'index'])
             ->name('audit-logs.index');

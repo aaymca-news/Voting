@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\AuditHelper;
 use App\Models\Group;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class GroupMemberController extends Controller
 {
-    public function store(Request $request, Group $group)
+    public function store(Request $request, Group $group): RedirectResponse
     {
         $request->validate([
             'user_id' => ['required', 'exists:users,id'],
@@ -19,17 +19,19 @@ class GroupMemberController extends Controller
 
         if (!$group->users()->where('users.id', $user->id)->exists()) {
             $group->users()->attach($user->id);
-
-            AuditHelper::log(
-                'user_added_to_group',
-                Group::class,
-                $group->id,
-                'Added user ' . $user->name . ' (' . $user->email . ') to group: ' . $group->name
-            );
         }
 
         return redirect()
             ->route('groups.show', $group)
             ->with('success', 'User added to group successfully.');
+    }
+
+    public function destroy(Group $group, User $user): RedirectResponse
+    {
+        $group->users()->detach($user->id);
+
+        return redirect()
+            ->route('groups.show', $group)
+            ->with('success', 'User removed from group successfully.');
     }
 }
