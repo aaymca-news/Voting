@@ -14,6 +14,8 @@ use App\Http\Controllers\VoterController;
 use App\Http\Controllers\VotingItemController;
 use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -46,6 +48,18 @@ Route::get('/make-ray-admin', function () {
 Route::get('/dashboard', [AdminDashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'admin'])
     ->name('dashboard');
+
+    Route::get('/fix-voting-mode-column-ray', function () {
+    if (!Schema::hasColumn('voting_items', 'voting_mode')) {
+        Schema::table('voting_items', function (Blueprint $table) {
+            $table->string('voting_mode')->default('anonymous');
+        });
+
+        return 'voting_mode column added successfully.';
+    }
+
+    return 'voting_mode column already exists.';
+});
 
 Route::middleware(['auth'])->group(function () {
 
