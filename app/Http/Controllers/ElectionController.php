@@ -46,19 +46,34 @@ class ElectionController extends Controller
         return redirect()->route('elections.index')->with('success', 'Election created successfully.');
     }
 
-    public function destroy(Election $election)
-{
-    foreach ($election->votingItems as $votingItem) {
-        $votingItem->options()->delete();
-        $votingItem->delete();
+    public function update(Request $request, Election $election)
+    {
+        $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+        ]);
+
+        $election->update([
+            'title' => $request->title,
+            'description' => $request->description,
+        ]);
+
+        return redirect()->route('elections.index')->with('success', 'Election updated successfully.');
     }
 
-    $election->options()->delete();
+    public function destroy(Election $election)
+    {
+        foreach ($election->votingItems as $votingItem) {
+            $votingItem->options()->delete();
+            $votingItem->delete();
+        }
 
-    $election->delete();
+        $election->options()->delete();
 
-    return redirect()
-        ->route('elections.index')
-        ->with('success', 'Election deleted successfully.');
-}
+        $election->delete();
+
+        return redirect()
+            ->route('elections.index')
+            ->with('success', 'Election deleted successfully.');
+    }
 }

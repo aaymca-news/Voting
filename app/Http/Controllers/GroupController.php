@@ -50,6 +50,23 @@ class GroupController extends Controller
         return view('groups.show', compact('group', 'users'));
     }
 
+    public function update(Request $request, Group $group)
+    {
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+        ]);
+
+        $group->update([
+            'name' => $request->name,
+            'description' => $request->description,
+        ]);
+
+        return redirect()
+            ->route('groups.index')
+            ->with('success', 'Group updated successfully.');
+    }
+
     public function destroy(Group $group)
     {
         $group->users()->detach();

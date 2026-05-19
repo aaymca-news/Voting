@@ -58,6 +58,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/groups/create', [GroupController::class, 'create'])->name('groups.create');
         Route::post('/groups', [GroupController::class, 'store'])->name('groups.store');
         Route::get('/groups/{group}', [GroupController::class, 'show'])->name('groups.show');
+        Route::patch('/groups/{group}', [GroupController::class, 'update'])->name('groups.update');
         Route::delete('/groups/{group}', [GroupController::class, 'destroy'])->name('groups.destroy');
 
         Route::post('/groups/{group}/members', [GroupMemberController::class, 'store'])
@@ -69,6 +70,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/elections', [ElectionController::class, 'index'])->name('elections.index');
         Route::get('/elections/create', [ElectionController::class, 'create'])->name('elections.create');
         Route::post('/elections', [ElectionController::class, 'store'])->name('elections.store');
+        Route::patch('/elections/{election}', [ElectionController::class, 'update'])->name('elections.update');
         Route::delete('/elections/{election}', [ElectionController::class, 'destroy'])->name('elections.destroy');
 
         Route::get('/elections/{election}/voting-items/create', [VotingItemController::class, 'create'])

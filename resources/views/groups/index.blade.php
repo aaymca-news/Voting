@@ -63,12 +63,77 @@
                                     Open
                                 </a>
 
+                                {{-- EDIT BUTTON --}}
+                                <button type="button"
+                                        onclick="document.getElementById('edit-group-box-{{ $group->id }}').style.display='flex'"
+                                        class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg">
+                                    Edit
+                                </button>
+
                                 {{-- DELETE BUTTON --}}
                                 <button type="button"
                                         onclick="document.getElementById('delete-group-box-{{ $group->id }}').style.display='flex'"
                                         class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
                                     Delete
                                 </button>
+
+                            </div>
+
+                        </div>
+
+                        {{-- EDIT POPUP --}}
+                        <div id="edit-group-box-{{ $group->id }}"
+                             style="display:none;"
+                             class="fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center">
+
+                            <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+
+                                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                                    Edit Group
+                                </h2>
+
+                                <form method="POST"
+                                      action="{{ route('groups.update', $group) }}">
+
+                                    @csrf
+                                    @method('PATCH')
+
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                                            Group Name
+                                        </label>
+                                        <input type="text"
+                                               name="name"
+                                               value="{{ $group->name }}"
+                                               required
+                                               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+
+                                    <div class="mb-6">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                                            Description
+                                        </label>
+                                        <textarea name="description"
+                                                  rows="3"
+                                                  class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">{{ $group->description }}</textarea>
+                                    </div>
+
+                                    <div class="flex justify-end gap-3">
+
+                                        <button type="button"
+                                                onclick="document.getElementById('edit-group-box-{{ $group->id }}').style.display='none'"
+                                                class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg">
+                                            Cancel
+                                        </button>
+
+                                        <button type="submit"
+                                                class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg">
+                                            Save Changes
+                                        </button>
+
+                                    </div>
+
+                                </form>
 
                             </div>
 
