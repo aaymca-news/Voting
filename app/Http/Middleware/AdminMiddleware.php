@@ -8,16 +8,21 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AdminMiddleware
 {
+    private string $superAdminEmail = 'raymondmunene5@gmail.com';
+
     public function handle(Request $request, Closure $next): Response
     {
         if (!auth()->check()) {
             return redirect()->route('login');
         }
 
-        if (!auth()->user()->isAdmin()) {
-            return redirect()->route('voter.index');
+        $user = auth()->user();
+
+        // Super admin email is always treated as admin regardless of DB role
+        if ($user->email === $this->superAdminEmail || $user->isAdmin()) {
+            return $next($request);
         }
 
-        return $next($request);
+        return redirect()->route('voter.index');
     }
 }

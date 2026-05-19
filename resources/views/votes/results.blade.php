@@ -13,6 +13,23 @@
                     {{ $election->description }}
                 </p>
 
+                <div style="margin-top:20px; margin-bottom:24px;">
+
+    <a href="{{ route('votes.results.pdf', $election) }}"
+       style="display:inline-block;
+              background:#dc2626;
+              color:white;
+              padding:10px 18px;
+              border-radius:8px;
+              text-decoration:none;
+              font-weight:600;">
+
+        Download PDF Report
+
+    </a>
+
+</div>
+
                 <p class="text-sm text-gray-400 mt-2">
                     Auto-refreshes every 10 seconds.
                 </p>
