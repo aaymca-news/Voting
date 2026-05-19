@@ -420,7 +420,7 @@
 
     {{-- ── HERO ── --}}
     <section class="hero">
-        <div class="hero-eyebrow fade-up">Africa Alliance Youth</div>
+        <div class="hero-eyebrow fade-up">Africa Alliance of YMCAs</div>
         <div class="hero-logo fade-up">
             <img src="{{ asset('images/logo.png') }}" alt="AAYMCA Africa Alliance">
         </div>
