@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Vote;
-
 class VoterController extends Controller
 {
     public function index()
@@ -13,13 +11,13 @@ class VoterController extends Controller
         $groups = auth()->user()
             ->groups()
             ->with([
-                'elections.votingItems' => function ($query) use ($userId) {
+                'elections' => function ($query) use ($userId) {
                     $query->where(function ($q) use ($userId) {
                         $q->where('status', 'open')
-                            ->orWhereHas('votes', function ($voteQuery) use ($userId) {
+                            ->orWhereHas('votingItems.votes', function ($voteQuery) use ($userId) {
                                 $voteQuery->where('user_id', $userId);
                             });
-                    })->with(['options', 'votes']);
+                    })->with(['votingItems.options', 'votingItems.votes']);
                 }
             ])
             ->get();

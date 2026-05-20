@@ -10,7 +10,7 @@ class ReportController extends Controller
     public function index()
     {
         $groups = Group::with([
-            'elections.votingItems.options.votes',
+            'elections.votingItems.options.votes.user',
         ])->latest()->get();
 
         return view('reports.index', compact('groups'));
@@ -19,7 +19,7 @@ class ReportController extends Controller
     public function groupPdf(Group $group)
     {
         $group->load([
-            'elections.votingItems.options.votes',
+            'elections.votingItems.options.votes.user',
         ]);
 
         $pdf = Pdf::loadView('reports.group-pdf', compact('group'))

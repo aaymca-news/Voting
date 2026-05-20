@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Group Election Report</title>
+    <title>Meeting Report</title>
 
     <style>
         body {
@@ -50,13 +50,19 @@
         }
 
         .section {
-            margin-bottom: 24px;
+            margin-bottom: 26px;
+            page-break-inside: avoid;
+        }
+
+        .small {
+            font-size: 11px;
+            color: #6b7280;
         }
     </style>
 </head>
 <body>
 
-    <h1>{{ $group->name }} Election Report</h1>
+    <h1>{{ $group->name }} Report</h1>
 
     <p class="muted">
         {{ $group->description }}
@@ -71,19 +77,31 @@
     </p>
 
     @php
-        $hasClosedMotions = false;
+        $hasCompletedMotions = false;
     @endphp
 
-    @foreach($group->elections as $election)
+    @foreach($group->elections->where('status', 'closed') as $election)
 
         @php
-            $closedMotions = $election->votingItems->where('status', 'closed');
+            $motion = $election->votingItems->first();
         @endphp
 
-        @if($closedMotions->count() > 0)
+        @if($motion)
 
             @php
-                $hasClosedMotions = true;
+                $hasCompletedMotions = true;
+
+                $totalVotes = $motion->options->sum(function ($option) {
+                    return $option->votes->count();
+                });
+
+                $highestVotes = $motion->options->max(function ($option) {
+                    return $option->votes->count();
+                });
+
+                $leadingOptions = $motion->options->filter(function ($option) use ($highestVotes, $totalVotes) {
+                    return $totalVotes > 0 && $option->votes->count() === $highestVotes;
+                });
             @endphp
 
             <div class="section">
@@ -94,77 +112,103 @@
                     {{ $election->description }}
                 </p>
 
-                @foreach($closedMotions as $motion)
+                <p>
+                    <strong>Status:</strong> Closed
+                </p>
 
-                    @php
-                        $totalVotes = $motion->options->sum(function ($option) {
-                            return $option->votes->count();
-                        });
+                <p>
+                    <strong>Voting Visibility:</strong>
+                    {{ $motion->voting_mode === 'named' ? 'Visible voters' : 'Anonymous voters' }}
+                </p>
 
-                        $highestVotes = $motion->options->max(function ($option) {
-                            return $option->votes->count();
-                        });
+                <p>
+                    <strong>Total Votes Cast:</strong> {{ $totalVotes }}
+                </p>
 
-                        $leadingOptions = $motion->options->filter(function ($option) use ($highestVotes, $totalVotes) {
-                            return $totalVotes > 0 && $option->votes->count() === $highestVotes;
-                        });
-                    @endphp
+                <p>
+                    <strong>Leading Option:</strong>
+                    @if($totalVotes > 0)
+                        {{ $leadingOptions->pluck('name')->join(', ') }}
+                        with {{ $highestVotes }} vote{{ $highestVotes === 1 ? '' : 's' }}
+                    @else
+                        No votes
+                    @endif
+                </p>
 
-                    <h3>{{ $motion->title }}</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Option</th>
+                            <th>Votes</th>
+                            <th>Percentage</th>
+                        </tr>
+                    </thead>
 
-                    <p class="muted">
-                        {{ $motion->description }}
-                    </p>
+                    <tbody>
+                        @foreach($motion->options as $option)
 
-                    <p>
-                        <strong>Status:</strong> Closed
-                    </p>
+                            @php
+                                $votes = $option->votes->count();
 
-                    <p>
-                        <strong>Total Votes Cast:</strong> {{ $totalVotes }}
-                    </p>
+                                $percentage = $totalVotes > 0
+                                    ? round(($votes / $totalVotes) * 100, 1)
+                                    : 0;
+                            @endphp
 
-                    <p>
-                        <strong>Leading Option:</strong>
-                        @if($totalVotes > 0)
-                            {{ $leadingOptions->pluck('name')->join(', ') }}
-                            with {{ $highestVotes }} vote{{ $highestVotes === 1 ? '' : 's' }}
-                        @else
-                            No votes
-                        @endif
-                    </p>
-
-                    <table>
-                        <thead>
                             <tr>
-                                <th>Option</th>
-                                <th>Votes</th>
-                                <th>Percentage</th>
+                                <td>{{ $option->name }}</td>
+                                <td>{{ $votes }}</td>
+                                <td>{{ $percentage }}%</td>
                             </tr>
-                        </thead>
 
-                        <tbody>
-                            @foreach($motion->options as $option)
+                        @endforeach
+                    </tbody>
+                </table>
 
-                                @php
-                                    $votes = $option->votes->count();
+                @if($motion->voting_mode === 'named')
 
-                                    $percentage = $totalVotes > 0
-                                        ? round(($votes / $totalVotes) * 100, 1)
-                                        : 0;
-                                @endphp
+                    <h3>Voter Details</h3>
 
+                    @foreach($motion->options as $option)
+
+                        <table>
+                            <thead>
                                 <tr>
-                                    <td>{{ $option->name }}</td>
-                                    <td>{{ $votes }}</td>
-                                    <td>{{ $percentage }}%</td>
+                                    <th colspan="2">{{ $option->name }}</th>
                                 </tr>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                </tr>
+                            </thead>
 
-                            @endforeach
-                        </tbody>
-                    </table>
+                            <tbody>
+                                @forelse($option->votes as $vote)
 
-                @endforeach
+                                    <tr>
+                                        <td>{{ $vote->user?->name ?? 'Deleted user' }}</td>
+                                        <td>{{ $vote->user?->email ?? '-' }}</td>
+                                    </tr>
+
+                                @empty
+
+                                    <tr>
+                                        <td colspan="2">No voters selected this option.</td>
+                                    </tr>
+
+                                @endforelse
+                            </tbody>
+                        </table>
+
+                    @endforeach
+
+                @else
+
+                    <p class="small">
+                        Voter identities are hidden because anonymous voting was selected.
+                    </p>
+
+                @endif
 
             </div>
 
@@ -172,10 +216,10 @@
 
     @endforeach
 
-    @if(!$hasClosedMotions)
+    @if(!$hasCompletedMotions)
 
         <p>
-            No closed motions or completed election results are available for this group yet.
+            No completed motions are available for this meeting yet.
         </p>
 
     @endif

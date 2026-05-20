@@ -12,7 +12,7 @@ class VoteController extends Controller
 {
     public function index()
     {
-        $elections = Election::with(['votingItems.options.votes'])->latest()->get();
+        $elections = Election::with(['group', 'votingItems.options.votes'])->latest()->get();
 
         $totalElections = $elections->count();
 
@@ -49,6 +49,12 @@ class VoteController extends Controller
                 ->with('error', 'Admins cannot vote.');
         }
 
+        if ($election->status !== 'open') {
+            return redirect()
+                ->back()
+                ->with('error', 'Voting is closed for this motion.');
+        }
+
         $request->validate([
             'election_option_id' => ['required', 'exists:election_options,id'],
             'voting_item_id' => ['required', 'exists:voting_items,id'],
@@ -56,10 +62,20 @@ class VoteController extends Controller
 
         $votingItem = VotingItem::findOrFail($request->voting_item_id);
 
-        if ($votingItem->status !== 'open') {
+        if ($votingItem->election_id !== $election->id) {
             return redirect()
                 ->back()
-                ->with('error', 'Voting is closed for this motion.');
+                ->with('error', 'Invalid voting motion.');
+        }
+
+        $optionBelongsToMotion = $votingItem->options()
+            ->where('id', $request->election_option_id)
+            ->exists();
+
+        if (!$optionBelongsToMotion) {
+            return redirect()
+                ->back()
+                ->with('error', 'Invalid voting option.');
         }
 
         $alreadyVoted = Vote::where('user_id', auth()->id())
@@ -86,17 +102,17 @@ class VoteController extends Controller
 
     public function results(Election $election)
     {
-        $election->load('votingItems.options.votes');
+        $election->load('votingItems.options.votes.user');
 
         return view('votes.results', compact('election'));
     }
-public function exportPdf(Election $election)
-{
-    $election->load('votingItems.options.votes');
 
-    $pdf = Pdf::loadView('votes.pdf-results', compact('election'));
+    public function exportPdf(Election $election)
+    {
+        $election->load('votingItems.options.votes.user');
 
-    return $pdf->download('results-' . $election->id . '.pdf');
-}
+        $pdf = Pdf::loadView('votes.pdf-results', compact('election'));
 
+        return $pdf->download('results-' . $election->id . '.pdf');
+    }
 }

@@ -4,11 +4,11 @@
 
             <div class="mb-8">
                 <h1 class="text-4xl font-bold text-gray-800">
-                    Election Reports
+                    Reports
                 </h1>
 
                 <p class="text-gray-500 mt-2">
-                    Download summarized reports by group.
+                    Download completed motion reports by meeting.
                 </p>
             </div>
 
@@ -17,17 +17,23 @@
                 @forelse($groups as $group)
 
                     @php
-                        $closedMotionsCount = $group->elections->sum(function ($election) {
-                            return $election->votingItems->count();
-                        });
+                        $completedMotionsCount = $group->elections
+                            ->where('status', 'closed')
+                            ->count();
 
-                        $totalVotes = $group->elections->sum(function ($election) {
-                            return $election->votingItems->sum(function ($motion) {
+                        $totalVotes = $group->elections
+                            ->where('status', 'closed')
+                            ->sum(function ($election) {
+                                $motion = $election->votingItems->first();
+
+                                if (!$motion) {
+                                    return 0;
+                                }
+
                                 return $motion->options->sum(function ($option) {
                                     return $option->votes->count();
                                 });
                             });
-                        });
                     @endphp
 
                     <div class="bg-white shadow rounded-2xl p-6">
@@ -48,11 +54,11 @@
 
                             <div class="bg-gray-50 rounded-lg p-4">
                                 <p class="text-sm text-gray-500">
-                                    Closed Motions
+                                    Completed Motions
                                 </p>
 
                                 <p class="text-3xl font-bold mt-1">
-                                    {{ $closedMotionsCount }}
+                                    {{ $completedMotionsCount }}
                                 </p>
                             </div>
 
@@ -70,7 +76,7 @@
 
                         <a href="{{ route('reports.group.pdf', $group) }}"
                            style="display:inline-block; margin-top:20px; background:#dc2626; color:white; padding:10px 16px; border-radius:8px; text-decoration:none; font-weight:600;">
-                            Download Group Report
+                            Download Report
                         </a>
 
                     </div>
@@ -79,7 +85,7 @@
 
                     <div class="bg-white shadow rounded-2xl p-6">
                         <p class="text-gray-500">
-                            No groups available for reporting.
+                            No meetings available for reporting.
                         </p>
                     </div>
 

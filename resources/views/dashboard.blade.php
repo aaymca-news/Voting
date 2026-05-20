@@ -8,7 +8,7 @@
                 </h1>
 
                 <p class="text-gray-500 mt-2">
-                    Manage elections, motions, users, groups, and voting activity.
+                    Manage elections, motions, users, meetings and voting activity.
                 </p>
             </div>
 
@@ -20,18 +20,18 @@
                     </div>
 
                     <h2 class="text-3xl font-bold text-gray-800 mb-3">
-                        Groups
+                        Meetings
                     </h2>
 
                     <p class="text-gray-500 mb-6">
-                        Create and manage voting groups.
+                        Create and manage meeting groups.
                     </p>
 
                     <hr class="mb-6">
 
                     <a href="{{ route('groups.index') }}"
                        style="display:inline-block; background:#2563eb; color:white; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:600;">
-                        Manage Groups →
+                        Create Meeting →
                     </a>
                 </div>
 
@@ -41,18 +41,18 @@
                     </div>
 
                     <h2 class="text-3xl font-bold text-gray-800 mb-3">
-                        Elections
+                        Motions
                     </h2>
 
                     <p class="text-gray-500 mb-6">
-                        Create and manage election sessions.
+                        Create and manage motion sessions.
                     </p>
 
                     <hr class="mb-6">
 
                     <a href="{{ route('elections.index') }}"
                        style="display:inline-block; background:#16a34a; color:white; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:600;">
-                        Manage Elections →
+                        Create Motion →
                     </a>
                 </div>
 

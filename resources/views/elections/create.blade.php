@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Create Election
+            Create Motion
         </h2>
     </x-slot>
 
@@ -15,7 +15,7 @@
 
                     <div class="mb-4">
                         <label class="block font-medium text-sm text-gray-700">
-                            Election Title
+                            Motion Title
                         </label>
 
                         <input type="text" name="title" class="w-full border rounded px-3 py-2" required>
@@ -23,11 +23,11 @@
 
                     <div class="mb-4">
                         <label class="block font-medium text-sm text-gray-700">
-                            Group
+                            Meeting
                         </label>
 
                         <select name="group_id" class="w-full border rounded px-3 py-2" required>
-                            <option value="">Select Group</option>
+                            <option value="">Select Meeting</option>
 
                             @foreach($groups as $group)
                                 <option value="{{ $group->id }}">{{ $group->name }}</option>
@@ -37,22 +37,21 @@
 
                     <div class="mb-4">
                         <label class="block font-medium text-sm text-gray-700">
-                            Description
+                            Voting Visibility
                         </label>
 
-                        <textarea name="description" rows="4" class="w-full border rounded px-3 py-2"></textarea>
+                        <select name="voting_mode" class="w-full border rounded px-3 py-2" required>
+                            <option value="anonymous">Anonymous voters</option>
+                            <option value="named">Visible voters</option>
+                        </select>
                     </div>
 
                     <div class="mb-4">
                         <label class="block font-medium text-sm text-gray-700">
-                            Status
+                            Description
                         </label>
 
-                        <select name="status" class="w-full border rounded px-3 py-2">
-                            <option value="draft">Draft</option>
-                            <option value="open">Open</option>
-                            <option value="closed">Closed</option>
-                        </select>
+                        <textarea name="description" rows="4" class="w-full border rounded px-3 py-2"></textarea>
                     </div>
 
                     <div class="mb-4">
@@ -74,7 +73,7 @@
                     <div class="mt-6">
                         <button type="submit"
                             style="display:inline-block; background:#16a34a; color:white; padding:10px 16px; border-radius:8px; text-decoration:none;">
-                            Save Election
+                            Save Motion
                         </button>
 
                         <a href="{{ route('elections.index') }}"

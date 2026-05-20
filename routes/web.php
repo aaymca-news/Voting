@@ -71,6 +71,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/elections/create', [ElectionController::class, 'create'])->name('elections.create');
         Route::post('/elections', [ElectionController::class, 'store'])->name('elections.store');
         Route::patch('/elections/{election}', [ElectionController::class, 'update'])->name('elections.update');
+        Route::patch('/elections/{election}/open', [ElectionController::class, 'open'])->name('elections.open');
+        Route::patch('/elections/{election}/close', [ElectionController::class, 'close'])->name('elections.close');
         Route::delete('/elections/{election}', [ElectionController::class, 'destroy'])->name('elections.destroy');
 
         Route::get('/elections/{election}/voting-items/create', [VotingItemController::class, 'create'])

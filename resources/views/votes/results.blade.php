@@ -4,6 +4,28 @@
 
             <meta http-equiv="refresh" content="10">
 
+            @php
+                $motion = $election->votingItems->first();
+
+                $motionTotalVotes = $motion
+                    ? $motion->options->sum(function ($option) {
+                        return $option->votes->count();
+                    })
+                    : 0;
+
+                $highestVotes = $motion
+                    ? $motion->options->max(function ($option) {
+                        return $option->votes->count();
+                    })
+                    : 0;
+
+                $leadingOptions = $motion
+                    ? $motion->options->filter(function ($option) use ($highestVotes, $motionTotalVotes) {
+                        return $motionTotalVotes > 0 && $option->votes->count() === $highestVotes;
+                    })
+                    : collect();
+            @endphp
+
             <div class="mb-6">
                 <h1 class="text-3xl font-bold text-gray-800">
                     Results: {{ $election->title }}
@@ -15,20 +37,18 @@
 
                 <div style="margin-top:20px; margin-bottom:24px;">
 
-    <a href="{{ route('votes.results.pdf', $election) }}"
-       style="display:inline-block;
-              background:#dc2626;
-              color:white;
-              padding:10px 18px;
-              border-radius:8px;
-              text-decoration:none;
-              font-weight:600;">
+                    <a href="{{ route('votes.results.pdf', $election) }}"
+                       style="display:inline-block;
+                              background:#dc2626;
+                              color:white;
+                              padding:10px 18px;
+                              border-radius:8px;
+                              text-decoration:none;
+                              font-weight:600;">
+                        Download PDF Report
+                    </a>
 
-        Download PDF Report
-
-    </a>
-
-</div>
+                </div>
 
                 <p class="text-sm text-gray-400 mt-2">
                     Auto-refreshes every 10 seconds.
@@ -37,37 +57,20 @@
 
             <div class="bg-white shadow rounded-2xl p-6">
 
-                @forelse($election->votingItems as $motion)
+                @if($motion)
 
-                    @php
-                        $motionTotalVotes = $motion->options->sum(function ($option) {
-                            return $option->votes->count();
-                        });
-
-                        $highestVotes = $motion->options->max(function ($option) {
-                            return $option->votes->count();
-                        });
-
-                        $leadingOptions = $motion->options->filter(function ($option) use ($highestVotes, $motionTotalVotes) {
-                            return $motionTotalVotes > 0 && $option->votes->count() === $highestVotes;
-                        });
-                    @endphp
-
-                    <div class="border rounded-xl p-6 mb-8">
+                    <div class="border rounded-xl p-6">
 
                         <div class="flex justify-between items-start gap-4 mb-5">
 
                             <div>
-                                <h2 class="text-2xl font-bold">
-                                    {{ $motion->title }}
-                                </h2>
-
-                                <p class="text-gray-500 mt-1">
-                                    {{ $motion->description }}
+                                <p class="font-semibold">
+                                    Total Votes Cast: {{ $motionTotalVotes }}
                                 </p>
 
-                                <p class="font-semibold mt-4">
-                                    Total Votes Cast: {{ $motionTotalVotes }}
+                                <p class="text-sm text-gray-500 mt-1">
+                                    Voting Visibility:
+                                    {{ $motion->voting_mode === 'named' ? 'Visible voters' : 'Anonymous voters' }}
                                 </p>
                             </div>
 
@@ -133,7 +136,7 @@
 
                                     <div class="text-sm text-gray-600">
                                         {{ $optionVotes }} vote{{ $optionVotes === 1 ? '' : 's' }}
-                                        —
+                                        -
                                         {{ $percentage }}%
                                     </div>
 
@@ -143,25 +146,60 @@
                                     <div style="background:#16a34a; height:14px; width:{{ $percentage }}%; border-radius:999px;"></div>
                                 </div>
 
+                                @if($motion->voting_mode === 'named')
+
+                                    <div style="margin-top:10px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:10px 12px;">
+
+                                        <p class="font-semibold text-sm text-gray-700 mb-2">
+                                            Voters who chose {{ $option->name }}:
+                                        </p>
+
+                                        @forelse($option->votes as $vote)
+
+                                            <p class="text-sm text-gray-600">
+                                                {{ $vote->user?->name ?? 'Deleted user' }}
+                                                @if($vote->user)
+                                                    ({{ $vote->user->email }})
+                                                @endif
+                                            </p>
+
+                                        @empty
+
+                                            <p class="text-sm text-gray-500">
+                                                No voters selected this option.
+                                            </p>
+
+                                        @endforelse
+
+                                    </div>
+
+                                @endif
+
                             </div>
 
                         @empty
 
                             <p class="text-gray-500">
-                                No voting options found for this motion.
+                                No voting options found.
                             </p>
 
                         @endforelse
 
+                        @if($motion->voting_mode !== 'named')
+                            <p class="text-sm text-gray-500">
+                                Voter identities are hidden because anonymous voting was selected.
+                            </p>
+                        @endif
+
                     </div>
 
-                @empty
+                @else
 
                     <p class="text-gray-500">
-                        No motions/agendas found for this election.
+                        No voting data found for this motion.
                     </p>
 
-                @endforelse
+                @endif
 
             </div>
 

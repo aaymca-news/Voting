@@ -45,9 +45,13 @@ class GroupController extends Controller
             'elections.votingItems',
         ]);
 
-        $users = User::orderBy('name')->get();
+        $users = User::whereNotIn('role', ['admin', 'super_admin'])
+            ->orderBy('name')
+            ->get();
 
-        return view('groups.show', compact('group', 'users'));
+        $groups = Group::orderBy('name')->get();
+
+        return view('groups.show', compact('group', 'users', 'groups'));
     }
 
     public function update(Request $request, Group $group)

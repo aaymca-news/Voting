@@ -5,17 +5,17 @@
             <div class="flex justify-between items-center mb-8">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-800">
-                        Groups
+                        Meetings
                     </h1>
 
                     <p class="text-gray-500 mt-2">
-                        Manage voting groups.
+                        Create and Manage meetings.
                     </p>
                 </div>
 
                 <a href="{{ route('groups.create') }}"
                    class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg">
-                    Create Group
+                    Create Meeting
                 </a>
             </div>
 
@@ -89,7 +89,7 @@
                             <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
 
                                 <h2 class="text-2xl font-bold text-gray-800 mb-6">
-                                    Edit Group
+                                    Edit Meeting
                                 </h2>
 
                                 <form method="POST"
@@ -100,7 +100,7 @@
 
                                     <div class="mb-4">
                                         <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            Group Name
+                                            Meeting Name
                                         </label>
                                         <input type="text"
                                                name="name"
@@ -147,19 +147,19 @@
                             <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
 
                                 <h2 class="text-2xl font-bold text-gray-800 mb-4">
-                                    Delete Group
+                                    Delete Meeting
                                 </h2>
 
                                 <p class="text-gray-600 mb-6">
-                                    Are you sure you want to delete this group?
+                                    Are you sure you want to delete this meeting?
                                     This will permanently remove:
                                 </p>
 
                                 <ul class="list-disc ml-5 text-gray-600 mb-6 space-y-1">
-                                    <li>The group</li>
-                                    <li>All group memberships</li>
-                                    <li>All elections under the group</li>
-                                    <li>All motions and voting records</li>
+                                    <li>The meeting</li>
+                                    <li>All meeting memberships</li>
+                                    <li>All elections and motions under the meeting</li>
+                                    <li>All vote records</li>
                                 </ul>
 
                                 <div class="flex justify-end gap-3">
@@ -194,7 +194,7 @@
                 @empty
 
                     <p class="text-gray-500">
-                        No groups created yet.
+                        No meetings created yet.
                     </p>
 
                 @endforelse

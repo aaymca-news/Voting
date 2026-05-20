@@ -8,7 +8,7 @@
                 </h1>
 
                 <p class="text-gray-500 mt-2">
-                    View your assigned groups and vote on open motions/agendas.
+                    View your assigned meetings and vote on open motions.
                 </p>
             </div>
 
@@ -32,140 +32,128 @@
                         {{ $group->name }}
                     </h2>
 
-                    <p class="text-gray-500 mt-1 mb-6">
+                    <p class="text-gray-500 mt-1">
                         {{ $group->description }}
+                    </p>
+
+                    <p class="text-gray-400 text-sm mt-2 mb-6">
+                        Code: {{ $group->code }}
                     </p>
 
                     @forelse($group->elections as $election)
 
-                        <div class="border rounded-xl p-5 mb-5">
+                        @php
+                            $motion = $election->votingItems->first();
+                        @endphp
 
-                            <h3 class="text-xl font-bold">
-                                {{ $election->title }}
-                            </h3>
+                        @if($motion)
 
-                            <p class="text-gray-500 mt-1 mb-4">
-                                {{ $election->description }}
-                            </p>
+                            <div class="border rounded-xl p-5 mb-5">
 
-                            @forelse($election->votingItems as $motion)
+                                <h3 class="text-xl font-bold">
+                                    {{ $election->title }}
+                                </h3>
 
-                                <div class="border rounded-lg p-4 mb-4">
+                                <p class="text-gray-500 mt-1 mb-4">
+                                    {{ $election->description }}
+                                </p>
 
-                                    <h4 class="font-bold text-lg">
-                                        {{ $motion->title }}
-                                    </h4>
+                                @php
+                                    $userVote = \App\Models\Vote::with('electionOption')
+                                        ->where('user_id', auth()->id())
+                                        ->where('voting_item_id', $motion->id)
+                                        ->first();
+                                @endphp
 
-                                    <p class="text-gray-500 mt-1 mb-4">
-                                        {{ $motion->description }}
-                                    </p>
+                                @if($userVote)
 
-                                   @php
-    $userVote = \App\Models\Vote::with('electionOption')
-        ->where('user_id', auth()->id())
-        ->where('voting_item_id', $motion->id)
-        ->first();
-@endphp
+                                    <div style="background:#dcfce7; color:#166534; padding:12px 16px; border-radius:8px;">
+                                        You voted:
+                                        <strong>
+                                            {{ $userVote->electionOption->name }}
+                                        </strong>
+                                    </div>
 
-@if($userVote)
+                                @else
 
-    <div style="background:#dcfce7; color:#166534; padding:12px 16px; border-radius:8px;">
-        You voted:
-        <strong>
-            {{ $userVote->electionOption->name }}
-        </strong>
-    </div>
+                                    <form method="POST" action="{{ route('votes.store', $election) }}">
+                                        @csrf
 
-                                    @else
+                                        <input type="hidden"
+                                               name="voting_item_id"
+                                               value="{{ $motion->id }}">
 
-                                        <form method="POST"
-                                              action="{{ route('votes.store', $motion->election) }}">
+                                        <div class="space-y-3">
 
-                                            @csrf
+                                            @foreach($motion->options as $option)
 
-                                            <input type="hidden"
-                                                   name="voting_item_id"
-                                                   value="{{ $motion->id }}">
+                                                <label class="flex items-center gap-3 border rounded-lg px-4 py-3 cursor-pointer hover:bg-gray-50">
 
-                                            <div class="space-y-3">
+                                                    <input type="radio"
+                                                           name="election_option_id"
+                                                           value="{{ $option->id }}"
+                                                           required>
 
-                                                @foreach($motion->options as $option)
+                                                    <span class="font-medium">
+                                                        {{ $option->name }}
+                                                    </span>
 
-                                                    <label class="flex items-center gap-3 border rounded-lg px-4 py-3 cursor-pointer hover:bg-gray-50">
+                                                </label>
 
-                                                        <input type="radio"
-                                                               name="election_option_id"
-                                                               value="{{ $option->id }}"
-                                                               required>
+                                            @endforeach
 
-                                                        <span class="font-medium">
-                                                            {{ $option->name }}
-                                                        </span>
+                                        </div>
 
-                                                    </label>
+                                        <div class="mt-4">
 
-                                                @endforeach
+                                            <button type="button"
+                                                    onclick="document.getElementById('confirm-box-{{ $motion->id }}').style.display='block'"
+                                                    style="background:#2563eb; color:white; padding:10px 16px; border:none; border-radius:8px;">
+                                                Submit Vote
+                                            </button>
 
-                                            </div>
+                                        </div>
 
-                                            <div class="mt-4">
+                                        <div id="confirm-box-{{ $motion->id }}"
+                                             style="display:none; margin-top:16px; background:#fff7ed; border:1px solid #fdba74; color:#9a3412; padding:16px; border-radius:10px;">
+
+                                            <p class="font-semibold mb-2">
+                                                Confirm Your Vote
+                                            </p>
+
+                                            <p class="mb-4">
+                                                Are you sure you want to submit this vote? Once submitted, you cannot vote again on this motion.
+                                            </p>
+
+                                            <div style="display:flex; gap:10px;">
+
+                                                <button type="submit"
+                                                        style="background:#16a34a; color:white; padding:8px 14px; border:none; border-radius:8px;">
+                                                    Yes, Submit Vote
+                                                </button>
 
                                                 <button type="button"
-                                                        onclick="document.getElementById('confirm-box-{{ $motion->id }}').style.display='block'"
-                                                        style="background:#2563eb; color:white; padding:10px 16px; border:none; border-radius:8px;">
-                                                    Submit Vote
+                                                        onclick="document.getElementById('confirm-box-{{ $motion->id }}').style.display='none'"
+                                                        style="background:#6b7280; color:white; padding:8px 14px; border:none; border-radius:8px;">
+                                                    Cancel
                                                 </button>
 
                                             </div>
 
-                                            <div id="confirm-box-{{ $motion->id }}"
-                                                 style="display:none; margin-top:16px; background:#fff7ed; border:1px solid #fdba74; color:#9a3412; padding:16px; border-radius:10px;">
+                                        </div>
 
-                                                <p class="font-semibold mb-2">
-                                                    Confirm Your Vote
-                                                </p>
+                                    </form>
 
-                                                <p class="mb-4">
-                                                    Are you sure you want to submit this vote? Once submitted, you cannot vote again on this motion.
-                                                </p>
+                                @endif
 
-                                                <div style="display:flex; gap:10px;">
+                            </div>
 
-                                                    <button type="submit"
-                                                            style="background:#16a34a; color:white; padding:8px 14px; border:none; border-radius:8px;">
-                                                        Yes, Submit Vote
-                                                    </button>
-
-                                                    <button type="button"
-                                                            onclick="document.getElementById('confirm-box-{{ $motion->id }}').style.display='none'"
-                                                            style="background:#6b7280; color:white; padding:8px 14px; border:none; border-radius:8px;">
-                                                        Cancel
-                                                    </button>
-
-                                                </div>
-
-                                            </div>
-
-                                        </form>
-
-                                    @endif
-
-                                </div>
-
-                            @empty
-
-                                <p class="text-gray-500">
-                                    No motions/agendas are currently open for voting in this meeting.
-                                </p>
-
-                            @endforelse
-
-                        </div>
+                        @endif
 
                     @empty
 
                         <p class="text-gray-500">
-                            No elections/meetings available in this group yet.
+                            No motions are currently open for voting in this meeting.
                         </p>
 
                     @endforelse
@@ -176,7 +164,7 @@
 
                 <div class="bg-white shadow rounded-2xl p-6">
                     <p class="text-gray-500">
-                        You have not been added to any voting group yet.
+                        You have not been added to any meeting yet.
                     </p>
                 </div>
 

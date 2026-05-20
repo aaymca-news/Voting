@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Voting Results Report</title>
+    <title>Motion Results Report</title>
 
     <style>
         body {
@@ -18,20 +18,21 @@
 
         h2 {
             font-size: 18px;
-            margin-top: 25px;
-            margin-bottom: 4px;
+            margin-top: 24px;
+            margin-bottom: 8px;
         }
 
         h3 {
             font-size: 15px;
-            margin-top: 12px;
-            margin-bottom: 8px;
+            margin-top: 18px;
+            margin-bottom: 6px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 12px;
+            margin-bottom: 18px;
         }
 
         th, td {
@@ -46,11 +47,6 @@
 
         .muted {
             color: #6b7280;
-        }
-
-        .section {
-            margin-bottom: 25px;
-            page-break-inside: avoid;
         }
 
         .summary {
@@ -69,11 +65,33 @@
 </head>
 <body>
 
-    <h1>Voting Results Report</h1>
+    @php
+        $motion = $election->votingItems->first();
+
+        $totalVotes = $motion
+            ? $motion->options->sum(function ($option) {
+                return $option->votes->count();
+            })
+            : 0;
+
+        $highestVotes = $motion
+            ? $motion->options->max(function ($option) {
+                return $option->votes->count();
+            })
+            : 0;
+
+        $leadingOptions = $motion
+            ? $motion->options->filter(function ($option) use ($highestVotes, $totalVotes) {
+                return $totalVotes > 0 && $option->votes->count() === $highestVotes;
+            })
+            : collect();
+    @endphp
+
+    <h1>Motion Results Report</h1>
 
     <div class="summary">
         <p>
-            <strong>Election / Meeting:</strong> {{ $election->title }}
+            <strong>Motion:</strong> {{ $election->title }}
         </p>
 
         <p>
@@ -81,97 +99,123 @@
         </p>
 
         <p>
+            <strong>Status:</strong> {{ ucfirst($election->status) }}
+        </p>
+
+        @if($motion)
+            <p>
+                <strong>Voting Visibility:</strong>
+                {{ $motion->voting_mode === 'named' ? 'Visible voters' : 'Anonymous voters' }}
+            </p>
+        @endif
+
+        <p>
+            <strong>Total Votes Cast:</strong> {{ $totalVotes }}
+        </p>
+
+        <p>
             <strong>Generated on:</strong> {{ now()->format('M d, Y h:i A') }}
         </p>
     </div>
 
-    @forelse($election->votingItems as $motion)
+    @if($motion)
 
-        @php
-            $totalVotes = $motion->options->sum(function ($option) {
-                return $option->votes->count();
-            });
-
-            $highestVotes = $motion->options->max(function ($option) {
-                return $option->votes->count();
-            });
-
-            $leadingOptions = $motion->options->filter(function ($option) use ($highestVotes, $totalVotes) {
-                return $totalVotes > 0 && $option->votes->count() === $highestVotes;
-            });
-        @endphp
-
-        <div class="section">
-
-            <h2>{{ $motion->title }}</h2>
-
+        @if($totalVotes > 0)
+            <p>
+                <strong>Leading Option:</strong>
+                {{ $leadingOptions->pluck('name')->join(', ') }}
+                with {{ $highestVotes }} vote{{ $highestVotes === 1 ? '' : 's' }}
+            </p>
+        @else
             <p class="muted">
-                {{ $motion->description }}
+                No votes have been cast for this motion yet.
             </p>
+        @endif
 
-            <p>
-                <strong>Status:</strong> {{ ucfirst($motion->status) }}
-            </p>
+        <h2>Vote Summary</h2>
 
-            <p>
-                <strong>Total Votes Cast:</strong> {{ $totalVotes }}
-            </p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Option</th>
+                    <th>Votes</th>
+                    <th>Percentage</th>
+                </tr>
+            </thead>
 
-            @if($totalVotes > 0)
-                <p>
-                    <strong>Leading Option:</strong>
-                    {{ $leadingOptions->pluck('name')->join(', ') }}
-                    with {{ $highestVotes }} vote{{ $highestVotes === 1 ? '' : 's' }}
-                </p>
-            @else
-                <p class="muted">
-                    No votes have been cast for this motion yet.
-                </p>
-            @endif
+            <tbody>
+                @foreach($motion->options as $option)
 
-            <table>
-                <thead>
+                    @php
+                        $votes = $option->votes->count();
+
+                        $percentage = $totalVotes > 0
+                            ? round(($votes / $totalVotes) * 100, 1)
+                            : 0;
+                    @endphp
+
                     <tr>
-                        <th>Option</th>
-                        <th>Votes</th>
-                        <th>Percentage</th>
+                        <td>{{ $option->name }}</td>
+                        <td>{{ $votes }}</td>
+                        <td>{{ $percentage }}%</td>
                     </tr>
-                </thead>
 
-                <tbody>
-                    @foreach($motion->options as $option)
+                @endforeach
+            </tbody>
+        </table>
 
-                        @php
-                            $votes = $option->votes->count();
+        @if($motion->voting_mode === 'named')
 
-                            $percentage = $totalVotes > 0
-                                ? round(($votes / $totalVotes) * 100, 1)
-                                : 0;
-                        @endphp
+            <h2>Voter Details</h2>
 
+            @foreach($motion->options as $option)
+
+                <table>
+                    <thead>
                         <tr>
-                            <td>{{ $option->name }}</td>
-                            <td>{{ $votes }}</td>
-                            <td>{{ $percentage }}%</td>
+                            <th colspan="2">{{ $option->name }}</th>
                         </tr>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
 
-                    @endforeach
-                </tbody>
-            </table>
+                    <tbody>
+                        @forelse($option->votes as $vote)
+
+                            <tr>
+                                <td>{{ $vote->user?->name ?? 'Deleted user' }}</td>
+                                <td>{{ $vote->user?->email ?? '-' }}</td>
+                            </tr>
+
+                        @empty
+
+                            <tr>
+                                <td colspan="2">No voters selected this option.</td>
+                            </tr>
+
+                        @endforelse
+                    </tbody>
+                </table>
+
+            @endforeach
+
+        @else
 
             <p class="small">
-                This report shows vote totals only. Voter identities are not displayed in this PDF report.
+                Voter identities are hidden because anonymous voting was selected.
             </p>
 
-        </div>
+        @endif
 
-    @empty
+    @else
 
         <p class="muted">
-            No motions/agendas found for this election.
+            No voting data found for this motion.
         </p>
 
-    @endforelse
+    @endif
 
 </body>
 </html>
