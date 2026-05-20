@@ -8,15 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('voting_items', function (Blueprint $table) {
-            $table->string('voting_mode')->default('anonymous');
-        });
+        if (!Schema::hasColumn('voting_items', 'voting_mode')) {
+            Schema::table('voting_items', function (Blueprint $table) {
+                $table->string('voting_mode')->default('anonymous');
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('voting_items', function (Blueprint $table) {
-            $table->dropColumn('voting_mode');
-        });
+        // This migration is kept for compatibility only.
+        // The voting_mode column is created by the earlier migration.
     }
 };
