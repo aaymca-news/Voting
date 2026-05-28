@@ -57,6 +57,27 @@
                 </div>
 
                 <div class="bg-white shadow rounded-2xl p-8">
+                    <div style="width:72px; height:72px; border-radius:999px; background:#dbeafe; display:flex; align-items:center; justify-content:center; margin-bottom:28px;">
+                        <span style="font-size:34px;">🗳️</span>
+                    </div>
+
+                    <h2 class="text-3xl font-bold text-gray-800 mb-3">
+                        Elections
+                    </h2>
+
+                    <p class="text-gray-500 mb-6">
+                        Set up positional elections with candidates and photos.
+                    </p>
+
+                    <hr class="mb-6">
+
+                    <a href="{{ route('positional-elections.index') }}"
+                       style="display:inline-block; background:#2563eb; color:white; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:600;">
+                        Manage Elections →
+                    </a>
+                </div>
+
+                <div class="bg-white shadow rounded-2xl p-8">
                     <div style="width:72px; height:72px; border-radius:999px; background:#f3e8ff; display:flex; align-items:center; justify-content:center; margin-bottom:28px;">
                         <span style="font-size:34px;">📊</span>
                     </div>

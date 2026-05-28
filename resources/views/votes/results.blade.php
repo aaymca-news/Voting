@@ -4,6 +4,97 @@
 
             <meta http-equiv="refresh" content="10">
 
+            {{-- ══════════ POSITIONAL ELECTION RESULTS ══════════ --}}
+            @if($election->isPositional())
+
+                <div class="mb-6">
+                    <h1 class="text-3xl font-bold text-gray-800">Results: {{ $election->title }}</h1>
+                    <p class="text-gray-500 mt-1">{{ $election->description }}</p>
+                    <div class="mt-3">
+                        <a href="{{ route('positional-elections.index') }}" class="text-blue-600 hover:underline text-sm">← Back to Elections</a>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">Auto-refreshes every 10 seconds.</p>
+                </div>
+
+                <div class="space-y-8">
+                    @forelse($election->votingItems as $position)
+                        @php
+                            $totalVotes = $position->options->sum(fn ($c) => $c->votes->count());
+                            $highest    = $position->options->max(fn ($c) => $c->votes->count());
+                        @endphp
+
+                        <div class="bg-white shadow rounded-2xl p-6">
+
+                            <div class="flex justify-between items-start mb-5">
+                                <div>
+                                    <h2 class="text-2xl font-bold text-gray-800">{{ $position->title }}</h2>
+                                    @if($position->description)
+                                        <p class="text-gray-500 text-sm mt-1">{{ $position->description }}</p>
+                                    @endif
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-gray-500 text-sm">{{ $totalVotes }} vote{{ $totalVotes === 1 ? '' : 's' }}</span>
+                                    @if($position->status === 'open')
+                                        <span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">Open</span>
+                                    @elseif($position->status === 'closed')
+                                        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-3 py-1 rounded-full">Closed</span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            @if($totalVotes > 0)
+                                @php $winners = $position->options->filter(fn ($c) => $c->votes->count() === $highest && $highest > 0); @endphp
+                                <div class="bg-green-50 border border-green-200 rounded-xl px-5 py-3 mb-5">
+                                    <p class="text-green-800 font-semibold text-sm">
+                                        Leading: {{ $winners->pluck('name')->join(', ') }} — {{ $highest }} vote{{ $highest === 1 ? '' : 's' }}
+                                    </p>
+                                </div>
+                            @else
+                                <div class="bg-gray-50 border border-gray-200 rounded-xl px-5 py-3 mb-5">
+                                    <p class="text-gray-400 text-sm">No votes cast yet.</p>
+                                </div>
+                            @endif
+
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                @foreach($position->options as $candidate)
+                                    @php
+                                        $votes     = $candidate->votes->count();
+                                        $pct       = $totalVotes > 0 ? round(($votes / $totalVotes) * 100, 1) : 0;
+                                        $isLeading = $totalVotes > 0 && $votes === $highest;
+                                    @endphp
+                                    <div class="bg-white rounded-xl border p-4 flex flex-col items-center text-center {{ $isLeading ? 'ring-2 ring-green-400' : '' }}">
+                                        @if($isLeading)
+                                            <span class="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full mb-2">Leading</span>
+                                        @endif
+                                        @if($candidate->photo_path)
+                                            <img src="{{ asset('storage/' . $candidate->photo_path) }}"
+                                                 class="w-16 h-16 rounded-full object-cover border-2 {{ $isLeading ? 'border-green-400' : 'border-gray-200' }} mb-2">
+                                        @else
+                                            <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center border-2 {{ $isLeading ? 'border-green-400' : 'border-gray-200' }} mb-2">
+                                                <span class="text-2xl">👤</span>
+                                            </div>
+                                        @endif
+                                        <p class="font-bold text-gray-800 text-sm">{{ $candidate->name }}</p>
+                                        <p class="text-2xl font-bold {{ $isLeading ? 'text-green-600' : 'text-gray-700' }} mt-1">{{ $votes }}</p>
+                                        <p class="text-gray-400 text-xs">{{ $pct }}%</p>
+                                        <div class="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+                                            <div class="{{ $isLeading ? 'bg-green-500' : 'bg-blue-400' }} h-1.5 rounded-full" style="width:{{ $pct }}%"></div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                        </div>
+                    @empty
+                        <div class="bg-white shadow rounded-2xl p-6">
+                            <p class="text-gray-500">No positions found for this election.</p>
+                        </div>
+                    @endforelse
+                </div>
+
+            @else
+            {{-- ══════════ MOTION RESULTS (existing) ══════════ --}}
+
             @php
                 $motion = $election->votingItems->first();
 
@@ -202,6 +293,8 @@
                 @endif
 
             </div>
+
+            @endif {{-- end @else (motion) --}}
 
         </div>
     </div>

@@ -189,238 +189,200 @@
 
                 @forelse($group->elections as $election)
 
-                    <div class="border rounded-xl p-6 mb-8">
+                    @if($election->isMotion())
 
-                        <div class="flex justify-between items-start gap-4">
+                        {{-- ── MOTION ── --}}
+                        <div class="border rounded-xl p-6 mb-8">
 
-                            <div>
-                                <h3 class="text-2xl font-bold">
-                                    {{ $election->title }}
-                                </h3>
+                            <div class="flex justify-between items-start gap-4">
 
-                                <p class="text-gray-500 mt-1">
-                                    {{ $election->description }}
-                                </p>
-                            </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold">
+                                        {{ $election->title }}
+                                    </h3>
 
-                            <div class="flex items-center gap-3 flex-wrap justify-end">
+                                    <p class="text-gray-500 mt-1">
+                                        {{ $election->description }}
+                                    </p>
+                                </div>
 
-                                @if($election->status === 'draft')
+                                <div class="flex items-center gap-3 flex-wrap justify-end">
 
-                                    <button type="button"
-                                            onclick="document.getElementById('edit-group-election-box-{{ $election->id }}').style.display='flex'"
-                                            class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg">
-                                        Edit
-                                    </button>
-
-                                    <form method="POST" action="{{ route('elections.open', $election) }}">
-                                        @csrf
-                                        @method('PATCH')
-
-                                        <button type="submit"
-                                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
-                                            Start Voting
-                                        </button>
-                                    </form>
-
-                                @elseif($election->status === 'open')
-
-                                    <form method="POST" action="{{ route('elections.close', $election) }}">
-                                        @csrf
-                                        @method('PATCH')
-
-                                        <button type="submit"
-                                                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
-                                            Close Voting
-                                        </button>
-                                    </form>
-
-                                @endif
-
-                                <button type="button"
-                                        onclick="document.getElementById('delete-group-election-box-{{ $election->id }}').style.display='flex'"
-                                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
-                                    Delete
-                                </button>
-
-                                @if($election->status === 'open')
-
-                                    <span class="bg-green-600 text-white px-3 py-1 rounded-full text-sm">
-                                        Open
-                                    </span>
-
-                                @elseif($election->status === 'closed')
-
-                                    <span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm">
-                                        Closed
-                                    </span>
-
-                                @else
-
-                                    <span class="bg-gray-500 text-white px-3 py-1 rounded-full text-sm">
-                                        Draft
-                                    </span>
-
-                                @endif
-
-                            </div>
-
-                        </div>
-
-                        {{-- EDIT POPUP --}}
-                        <div id="edit-group-election-box-{{ $election->id }}"
-                             style="display:none;"
-                             class="fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center">
-
-                            <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md max-h-[90vh] overflow-y-auto">
-
-                                <h2 class="text-2xl font-bold text-gray-800 mb-6">
-                                    Edit Motion
-                                </h2>
-
-                                <form method="POST"
-                                      action="{{ route('elections.update', $election) }}">
-
-                                    @csrf
-                                    @method('PATCH')
-
-                                    <div class="mb-4">
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            Motion Title
-                                        </label>
-
-                                        <input type="text"
-                                               name="title"
-                                               value="{{ $election->title }}"
-                                               required
-                                               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500">
-                                    </div>
-
-                                    <div class="mb-4">
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            Meeting
-                                        </label>
-
-                                        <select name="group_id"
-                                                required
-                                                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500">
-                                            @foreach($groups as $meeting)
-                                                <option value="{{ $meeting->id }}" @if($election->group_id === $meeting->id) selected @endif>
-                                                    {{ $meeting->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-
-                                    @php
-                                        $motionItem = $election->votingItems->first();
-                                    @endphp
-
-                                    <div class="mb-4">
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            Voting Visibility
-                                        </label>
-
-                                        <select name="voting_mode"
-                                                required
-                                                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500">
-                                            <option value="anonymous" @if(($motionItem?->voting_mode ?? 'anonymous') === 'anonymous') selected @endif>
-                                                Anonymous voters
-                                            </option>
-
-                                            <option value="named" @if(($motionItem?->voting_mode ?? 'anonymous') === 'named') selected @endif>
-                                                Visible voters
-                                            </option>
-                                        </select>
-                                    </div>
-
-                                    <div class="mb-4">
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            Description
-                                        </label>
-
-                                        <textarea name="description"
-                                                  rows="3"
-                                                  class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500">{{ $election->description }}</textarea>
-                                    </div>
-
-                                    <div class="mb-4">
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            Start Date
-                                        </label>
-
-                                        <input type="datetime-local"
-                                               name="starts_at"
-                                               value="{{ $election->starts_at ? $election->starts_at->format('Y-m-d\TH:i') : '' }}"
-                                               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500">
-                                    </div>
-
-                                    <div class="mb-6">
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                                            End Date
-                                        </label>
-
-                                        <input type="datetime-local"
-                                               name="ends_at"
-                                               value="{{ $election->ends_at ? $election->ends_at->format('Y-m-d\TH:i') : '' }}"
-                                               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500">
-                                    </div>
-
-                                    <div class="flex justify-end gap-3">
+                                    @if($election->status === 'draft')
 
                                         <button type="button"
-                                                onclick="document.getElementById('edit-group-election-box-{{ $election->id }}').style.display='none'"
-                                                class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg">
-                                            Cancel
-                                        </button>
-
-                                        <button type="submit"
+                                                onclick="document.getElementById('edit-group-election-box-{{ $election->id }}').style.display='flex'"
                                                 class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg">
-                                            Save Changes
+                                            Edit
                                         </button>
 
-                                    </div>
+                                        <form method="POST" action="{{ route('elections.open', $election) }}">
+                                            @csrf
+                                            @method('PATCH')
 
-                                </form>
+                                            <button type="submit"
+                                                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+                                                Start Voting
+                                            </button>
+                                        </form>
+
+                                    @elseif($election->status === 'open')
+
+                                        <form method="POST" action="{{ route('elections.close', $election) }}">
+                                            @csrf
+                                            @method('PATCH')
+
+                                            <button type="submit"
+                                                    class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
+                                                Close Voting
+                                            </button>
+                                        </form>
+
+                                    @endif
+
+                                    <button type="button"
+                                            onclick="document.getElementById('delete-group-election-box-{{ $election->id }}').style.display='flex'"
+                                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
+                                        Delete
+                                    </button>
+
+                                    @if($election->status === 'open')
+
+                                        <span class="bg-green-600 text-white px-3 py-1 rounded-full text-sm">
+                                            Open
+                                        </span>
+
+                                    @elseif($election->status === 'closed')
+
+                                        <span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm">
+                                            Closed
+                                        </span>
+
+                                    @else
+
+                                        <span class="bg-gray-500 text-white px-3 py-1 rounded-full text-sm">
+                                            Draft
+                                        </span>
+
+                                    @endif
+
+                                </div>
 
                             </div>
 
-                        </div>
+                            {{-- EDIT POPUP (motion) --}}
+                            <div id="edit-group-election-box-{{ $election->id }}"
+                                 style="display:none;"
+                                 class="fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center">
 
-                        {{-- DELETE POPUP --}}
-                        <div id="delete-group-election-box-{{ $election->id }}"
-                             style="display:none;"
-                             class="fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center">
+                                <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md max-h-[90vh] overflow-y-auto">
 
-                            <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-
-                                <h2 class="text-2xl font-bold text-gray-800 mb-4">
-                                    Delete Motion
-                                </h2>
-
-                                <p class="text-gray-600 mb-6">
-                                    Are you sure you want to delete this motion?
-                                    This action will permanently remove all voting records and voting options.
-                                </p>
-
-                                <div class="flex justify-end gap-3">
-
-                                    <button type="button"
-                                            onclick="document.getElementById('delete-group-election-box-{{ $election->id }}').style.display='none'"
-                                            class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg">
-                                        Cancel
-                                    </button>
+                                    <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                                        Edit Motion
+                                    </h2>
 
                                     <form method="POST"
-                                          action="{{ route('elections.destroy', $election) }}">
+                                          action="{{ route('elections.update', $election) }}">
 
                                         @csrf
-                                        @method('DELETE')
+                                        @method('PATCH')
 
-                                        <button type="submit"
-                                                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
-                                            Delete Motion
-                                        </button>
+                                        <div class="mb-4">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                                Motion Title
+                                            </label>
+
+                                            <input type="text"
+                                                   name="title"
+                                                   value="{{ $election->title }}"
+                                                   required
+                                                   class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                                Meeting
+                                            </label>
+
+                                            <select name="group_id"
+                                                    required
+                                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                                                @foreach($groups as $meeting)
+                                                    <option value="{{ $meeting->id }}" @if($election->group_id === $meeting->id) selected @endif>
+                                                        {{ $meeting->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        @php
+                                            $motionItem = $election->votingItems->first();
+                                        @endphp
+
+                                        <div class="mb-4">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                                Voting Visibility
+                                            </label>
+
+                                            <select name="voting_mode"
+                                                    required
+                                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                                                <option value="anonymous" @if(($motionItem?->voting_mode ?? 'anonymous') === 'anonymous') selected @endif>
+                                                    Anonymous voters
+                                                </option>
+
+                                                <option value="named" @if(($motionItem?->voting_mode ?? 'anonymous') === 'named') selected @endif>
+                                                    Visible voters
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                                Description
+                                            </label>
+
+                                            <textarea name="description"
+                                                      rows="3"
+                                                      class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500">{{ $election->description }}</textarea>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                                Start Date
+                                            </label>
+
+                                            <input type="datetime-local"
+                                                   name="starts_at"
+                                                   value="{{ $election->starts_at ? $election->starts_at->format('Y-m-d\TH:i') : '' }}"
+                                                   class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                                        </div>
+
+                                        <div class="mb-6">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                                End Date
+                                            </label>
+
+                                            <input type="datetime-local"
+                                                   name="ends_at"
+                                                   value="{{ $election->ends_at ? $election->ends_at->format('Y-m-d\TH:i') : '' }}"
+                                                   class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                                        </div>
+
+                                        <div class="flex justify-end gap-3">
+
+                                            <button type="button"
+                                                    onclick="document.getElementById('edit-group-election-box-{{ $election->id }}').style.display='none'"
+                                                    class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg">
+                                                Cancel
+                                            </button>
+
+                                            <button type="submit"
+                                                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg">
+                                                Save Changes
+                                            </button>
+
+                                        </div>
 
                                     </form>
 
@@ -428,9 +390,225 @@
 
                             </div>
 
+                            {{-- DELETE POPUP (motion) --}}
+                            <div id="delete-group-election-box-{{ $election->id }}"
+                                 style="display:none;"
+                                 class="fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center">
+
+                                <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+
+                                    <h2 class="text-2xl font-bold text-gray-800 mb-4">
+                                        Delete Motion
+                                    </h2>
+
+                                    <p class="text-gray-600 mb-6">
+                                        Are you sure you want to delete this motion?
+                                        This action will permanently remove all voting records and voting options.
+                                    </p>
+
+                                    <div class="flex justify-end gap-3">
+
+                                        <button type="button"
+                                                onclick="document.getElementById('delete-group-election-box-{{ $election->id }}').style.display='none'"
+                                                class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg">
+                                            Cancel
+                                        </button>
+
+                                        <form method="POST"
+                                              action="{{ route('elections.destroy', $election) }}">
+
+                                            @csrf
+                                            @method('DELETE')
+
+                                            <button type="submit"
+                                                    class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
+                                                Delete Motion
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
                         </div>
 
-                    </div>
+                    @elseif($election->isPositional())
+
+                        {{-- ── POSITIONAL ELECTION ── --}}
+                        <div class="border rounded-xl p-6 mb-8">
+
+                            <div class="flex justify-between items-start gap-4 mb-4">
+
+                                <div>
+                                    <h3 class="text-2xl font-bold">
+                                        {{ $election->title }}
+                                    </h3>
+
+                                    @if($election->description)
+                                        <p class="text-gray-500 mt-1">
+                                            {{ $election->description }}
+                                        </p>
+                                    @endif
+                                </div>
+
+                                <div class="flex items-center gap-3 flex-wrap justify-end">
+
+                                    <button type="button"
+                                            onclick="document.getElementById('delete-group-election-box-{{ $election->id }}').style.display='flex'"
+                                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
+                                        Delete
+                                    </button>
+
+                                    @if($election->status === 'open')
+
+                                        <span class="bg-green-600 text-white px-3 py-1 rounded-full text-sm">
+                                            Open
+                                        </span>
+
+                                    @elseif($election->status === 'closed')
+
+                                        <span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm">
+                                            Closed
+                                        </span>
+
+                                    @else
+
+                                        <span class="bg-gray-500 text-white px-3 py-1 rounded-full text-sm">
+                                            Draft
+                                        </span>
+
+                                    @endif
+
+                                </div>
+
+                            </div>
+
+                            {{-- POSITIONS LIST --}}
+                            @if($election->votingItems->isEmpty())
+
+                                <p class="text-gray-500 text-sm">
+                                    No positions added yet.
+                                </p>
+
+                            @else
+
+                                <div class="space-y-3 mt-2">
+
+                                    @foreach($election->votingItems as $position)
+
+                                        <div class="border border-gray-200 rounded-lg px-4 py-3 flex justify-between items-center gap-4 flex-wrap">
+
+                                            <span class="font-medium text-gray-800">
+                                                {{ $position->title }}
+                                            </span>
+
+                                            <div class="flex items-center gap-3 flex-wrap">
+
+                                                @if($position->status === 'draft')
+
+                                                    <form method="POST" action="{{ route('positions.open', $position) }}">
+                                                        @csrf
+                                                        @method('PATCH')
+
+                                                        <button type="submit"
+                                                                class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm">
+                                                            Start Voting
+                                                        </button>
+                                                    </form>
+
+                                                @elseif($position->status === 'open')
+
+                                                    <form method="POST" action="{{ route('positions.close', $position) }}">
+                                                        @csrf
+                                                        @method('PATCH')
+
+                                                        <button type="submit"
+                                                                class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm">
+                                                            Close Voting
+                                                        </button>
+                                                    </form>
+
+                                                @endif
+
+                                                @if($position->status === 'open')
+
+                                                    <span class="bg-green-100 text-green-800 px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                                        Open
+                                                    </span>
+
+                                                @elseif($position->status === 'closed')
+
+                                                    <span class="bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                                        Closed
+                                                    </span>
+
+                                                @else
+
+                                                    <span class="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                                        Draft
+                                                    </span>
+
+                                                @endif
+
+                                            </div>
+
+                                        </div>
+
+                                    @endforeach
+
+                                </div>
+
+                            @endif
+
+                            {{-- DELETE POPUP (positional election) --}}
+                            <div id="delete-group-election-box-{{ $election->id }}"
+                                 style="display:none;"
+                                 class="fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center">
+
+                                <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+
+                                    <h2 class="text-2xl font-bold text-gray-800 mb-4">
+                                        Delete Election
+                                    </h2>
+
+                                    <p class="text-gray-600 mb-6">
+                                        Are you sure you want to delete this election?
+                                        This action will permanently remove all voting records and voting options.
+                                    </p>
+
+                                    <div class="flex justify-end gap-3">
+
+                                        <button type="button"
+                                                onclick="document.getElementById('delete-group-election-box-{{ $election->id }}').style.display='none'"
+                                                class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg">
+                                            Cancel
+                                        </button>
+
+                                        <form method="POST"
+                                              action="{{ route('elections.destroy', $election) }}">
+
+                                            @csrf
+                                            @method('DELETE')
+
+                                            <button type="submit"
+                                                    class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
+                                                Delete Election
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    @endif
 
                 @empty
 

@@ -2,227 +2,376 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Meeting Report</title>
+    <title>{{ $group->name }} Report</title>
 
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
             font-size: 13px;
             color: #111827;
+            margin: 30px 36px;
         }
 
         h1 {
-            font-size: 24px;
-            margin-bottom: 6px;
+            font-size: 22px;
+            margin-bottom: 4px;
         }
 
         h2 {
-            font-size: 18px;
-            margin-top: 24px;
-            margin-bottom: 6px;
+            font-size: 17px;
+            margin-top: 28px;
+            margin-bottom: 4px;
+            border-bottom: 2px solid #d1d5db;
+            padding-bottom: 4px;
         }
 
         h3 {
-            font-size: 15px;
-            margin-top: 18px;
-            margin-bottom: 6px;
+            font-size: 14px;
+            margin-top: 16px;
+            margin-bottom: 4px;
+        }
+
+        h4 {
+            font-size: 13px;
+            margin-top: 14px;
+            margin-bottom: 4px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
-            margin-bottom: 18px;
+            margin-top: 8px;
+            margin-bottom: 14px;
         }
 
         th, td {
             border: 1px solid #d1d5db;
-            padding: 8px;
+            padding: 7px 9px;
             text-align: left;
         }
 
         th {
             background: #f3f4f6;
+            font-weight: bold;
         }
 
         .muted {
             color: #6b7280;
         }
 
-        .section {
-            margin-bottom: 26px;
-            page-break-inside: avoid;
-        }
-
         .small {
             font-size: 11px;
             color: #6b7280;
+        }
+
+        .section {
+            margin-bottom: 24px;
+            page-break-inside: avoid;
+        }
+
+        .status-open {
+            color: #16a34a;
+            font-weight: bold;
+        }
+
+        .status-closed {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        .status-draft {
+            color: #9ca3af;
+            font-weight: bold;
+        }
+
+        .leading-check {
+            color: #16a34a;
+            font-weight: bold;
+        }
+
+        .section-heading {
+            font-size: 19px;
+            font-weight: bold;
+            margin-top: 32px;
+            margin-bottom: 8px;
+            background: #f3f4f6;
+            padding: 8px 10px;
+        }
+
+        .footer {
+            margin-top: 40px;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 10px;
+            font-size: 11px;
+            color: #9ca3af;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
-    <h1>{{ $group->name }} Report</h1>
+    {{-- ───── HEADER ───── --}}
+    <h1>{{ $group->name }} &mdash; Meeting Report</h1>
 
-    <p class="muted">
-        {{ $group->description }}
-    </p>
-
-    <p class="muted">
-        Code: {{ $group->code }}
-    </p>
-
-    <p class="muted">
-        Generated on: {{ now()->format('M d, Y h:i A') }}
-    </p>
+    <p class="muted">{{ $group->description }}</p>
+    <p class="muted">Meeting Code: <strong>{{ $group->code }}</strong></p>
+    <p class="muted">Generated on: {{ now()->format('M d, Y h:i A') }}</p>
 
     @php
-        $hasCompletedMotions = false;
+        $motions            = $group->elections->where('election_type', 'motion')->values();
+        $positionalElections = $group->elections->where('election_type', 'positional')->values();
     @endphp
 
-    @foreach($group->elections->where('status', 'closed') as $election)
+    {{-- ═══════════════════════════════════════════
+         SECTION 1: MOTIONS
+    ════════════════════════════════════════════ --}}
+    @if($motions->isNotEmpty())
 
-        @php
-            $motion = $election->votingItems->first();
-        @endphp
+        <div class="section-heading">Section 1: Motions</div>
 
-        @if($motion)
+        @foreach($motions as $election)
 
             @php
-                $hasCompletedMotions = true;
-
-                $totalVotes = $motion->options->sum(function ($option) {
-                    return $option->votes->count();
-                });
-
-                $highestVotes = $motion->options->max(function ($option) {
-                    return $option->votes->count();
-                });
-
-                $leadingOptions = $motion->options->filter(function ($option) use ($highestVotes, $totalVotes) {
-                    return $totalVotes > 0 && $option->votes->count() === $highestVotes;
-                });
+                $motion = $election->votingItems->first();
             @endphp
+
+            @if($motion)
+
+                @php
+                    $totalVotes   = $motion->options->sum(fn($o) => $o->votes->count());
+                    $highestVotes = $motion->options->max(fn($o) => $o->votes->count()) ?? 0;
+                @endphp
+
+                <div class="section">
+
+                    <h2>{{ $election->title }}</h2>
+
+                    @if($election->description)
+                        <p class="muted">{{ $election->description }}</p>
+                    @endif
+
+                    <p>
+                        <strong>Status:</strong>
+                        @if($election->status === 'open')
+                            <span class="status-open">Voting Open</span>
+                        @elseif($election->status === 'closed')
+                            <span class="status-closed">Closed</span>
+                        @else
+                            <span class="status-draft">Draft</span>
+                        @endif
+                    </p>
+
+                    <p>
+                        <strong>Voting Visibility:</strong>
+                        {{ $motion->voting_mode === 'named' ? 'Visible voters (Named)' : 'Anonymous voters' }}
+                    </p>
+
+                    <p>
+                        <strong>Total Votes Cast:</strong> {{ $totalVotes }}
+                    </p>
+
+                    {{-- Results table --}}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Option</th>
+                                <th>Votes</th>
+                                <th>Percentage</th>
+                                <th>Leading</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($motion->options as $option)
+                                @php
+                                    $votes      = $option->votes->count();
+                                    $percentage = $totalVotes > 0
+                                        ? round(($votes / $totalVotes) * 100, 1)
+                                        : 0;
+                                    $isLeading  = $totalVotes > 0 && $votes === $highestVotes;
+                                @endphp
+                                <tr>
+                                    <td>{{ $option->name }}</td>
+                                    <td>{{ $votes }}</td>
+                                    <td>{{ $percentage }}%</td>
+                                    <td>
+                                        @if($isLeading)
+                                            <span class="leading-check">&#10003;</span>
+                                        @else
+                                            &mdash;
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+
+                    {{-- Named voter details --}}
+                    @if($motion->voting_mode === 'named')
+
+                        <h3>Voter Details</h3>
+
+                        @foreach($motion->options as $option)
+
+                            <h4>{{ $option->name }}</h4>
+
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($option->votes as $vote)
+                                        <tr>
+                                            <td>{{ $vote->user?->name ?? 'Deleted user' }}</td>
+                                            <td>{{ $vote->user?->email ?? '&mdash;' }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="2" class="muted">No voters selected this option.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+
+                        @endforeach
+
+                    @else
+
+                        <p class="small">
+                            Voter identities are hidden because anonymous voting was selected for this motion.
+                        </p>
+
+                    @endif
+
+                </div>
+
+            @endif
+
+        @endforeach
+
+    @endif
+
+    {{-- ═══════════════════════════════════════════
+         SECTION 2: POSITIONAL ELECTIONS
+    ════════════════════════════════════════════ --}}
+    @if($positionalElections->isNotEmpty())
+
+        <div class="section-heading">Section 2: Positional Elections</div>
+
+        @foreach($positionalElections as $election)
 
             <div class="section">
 
                 <h2>{{ $election->title }}</h2>
 
-                <p class="muted">
-                    {{ $election->description }}
-                </p>
+                @if($election->description)
+                    <p class="muted">{{ $election->description }}</p>
+                @endif
 
                 <p>
-                    <strong>Status:</strong> Closed
-                </p>
-
-                <p>
-                    <strong>Voting Visibility:</strong>
-                    {{ $motion->voting_mode === 'named' ? 'Visible voters' : 'Anonymous voters' }}
-                </p>
-
-                <p>
-                    <strong>Total Votes Cast:</strong> {{ $totalVotes }}
-                </p>
-
-                <p>
-                    <strong>Leading Option:</strong>
-                    @if($totalVotes > 0)
-                        {{ $leadingOptions->pluck('name')->join(', ') }}
-                        with {{ $highestVotes }} vote{{ $highestVotes === 1 ? '' : 's' }}
+                    <strong>Status:</strong>
+                    @if($election->status === 'open')
+                        <span class="status-open">Voting Open</span>
+                    @elseif($election->status === 'closed')
+                        <span class="status-closed">Closed</span>
                     @else
-                        No votes
+                        <span class="status-draft">Draft</span>
                     @endif
                 </p>
 
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Option</th>
-                            <th>Votes</th>
-                            <th>Percentage</th>
-                        </tr>
-                    </thead>
+                @forelse($election->votingItems as $position)
 
-                    <tbody>
-                        @foreach($motion->options as $option)
+                    @php
+                        $totalVotes   = $position->options->sum(fn($o) => $o->votes->count());
+                        $highestVotes = $position->options->max(fn($o) => $o->votes->count()) ?? 0;
+                    @endphp
 
-                            @php
-                                $votes = $option->votes->count();
+                    <div class="section">
 
-                                $percentage = $totalVotes > 0
-                                    ? round(($votes / $totalVotes) * 100, 1)
-                                    : 0;
-                            @endphp
+                        <h3>Position: {{ $position->title ?? $position->name ?? 'Unnamed Position' }}</h3>
 
-                            <tr>
-                                <td>{{ $option->name }}</td>
-                                <td>{{ $votes }}</td>
-                                <td>{{ $percentage }}%</td>
-                            </tr>
+                        <p>
+                            <strong>Status:</strong>
+                            @if(isset($position->status))
+                                @if($position->status === 'open')
+                                    <span class="status-open">Open</span>
+                                @elseif($position->status === 'closed')
+                                    <span class="status-closed">Closed</span>
+                                @else
+                                    <span class="status-draft">{{ ucfirst($position->status) }}</span>
+                                @endif
+                            @else
+                                <span class="muted">—</span>
+                            @endif
+                        </p>
 
-                        @endforeach
-                    </tbody>
-                </table>
-
-                @if($motion->voting_mode === 'named')
-
-                    <h3>Voter Details</h3>
-
-                    @foreach($motion->options as $option)
+                        <p><strong>Total Votes Cast:</strong> {{ $totalVotes }}</p>
 
                         <table>
                             <thead>
                                 <tr>
-                                    <th colspan="2">{{ $option->name }}</th>
-                                </tr>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
+                                    <th>Candidate</th>
+                                    <th>Votes</th>
+                                    <th>Percentage</th>
+                                    <th>Leading</th>
                                 </tr>
                             </thead>
-
                             <tbody>
-                                @forelse($option->votes as $vote)
-
+                                @forelse($position->options as $option)
+                                    @php
+                                        $votes      = $option->votes->count();
+                                        $percentage = $totalVotes > 0
+                                            ? round(($votes / $totalVotes) * 100, 1)
+                                            : 0;
+                                        $isLeading  = $totalVotes > 0 && $votes === $highestVotes;
+                                    @endphp
                                     <tr>
-                                        <td>{{ $vote->user?->name ?? 'Deleted user' }}</td>
-                                        <td>{{ $vote->user?->email ?? '-' }}</td>
+                                        <td>{{ $option->name }}</td>
+                                        <td>{{ $votes }}</td>
+                                        <td>{{ $percentage }}%</td>
+                                        <td>
+                                            @if($isLeading)
+                                                <span class="leading-check">&#10003;</span>
+                                            @else
+                                                &mdash;
+                                            @endif
+                                        </td>
                                     </tr>
-
                                 @empty
-
                                     <tr>
-                                        <td colspan="2">No voters selected this option.</td>
+                                        <td colspan="4" class="muted">No candidates found for this position.</td>
                                     </tr>
-
                                 @endforelse
                             </tbody>
                         </table>
 
-                    @endforeach
+                    </div>
 
-                @else
+                @empty
 
-                    <p class="small">
-                        Voter identities are hidden because anonymous voting was selected.
-                    </p>
+                    <p class="muted">No positions defined for this election.</p>
 
-                @endif
+                @endforelse
 
             </div>
 
-        @endif
-
-    @endforeach
-
-    @if(!$hasCompletedMotions)
-
-        <p>
-            No completed motions are available for this meeting yet.
-        </p>
+        @endforeach
 
     @endif
+
+    {{-- Fallback if truly nothing exists --}}
+    @if($motions->isEmpty() && $positionalElections->isEmpty())
+        <p class="muted" style="margin-top: 24px;">
+            No elections or motions have been created for this meeting yet.
+        </p>
+    @endif
+
+    {{-- ───── FOOTER ───── --}}
+    <div class="footer">
+        Generated by AAYMCAVoting System
+    </div>
 
 </body>
 </html>

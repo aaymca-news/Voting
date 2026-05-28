@@ -8,7 +8,7 @@
                 </h1>
 
                 <p class="text-gray-500 mt-2">
-                    Download completed motion reports by meeting.
+                    View meeting summaries and download full PDF reports for all motions and positional elections.
                 </p>
             </div>
 
@@ -17,73 +17,85 @@
                 @forelse($groups as $group)
 
                     @php
-                        $completedMotionsCount = $group->elections
-                            ->where('status', 'closed')
+                        $motionsCount = $group->elections
+                            ->where('election_type', 'motion')
                             ->count();
 
-                        $totalVotes = $group->elections
-                            ->where('status', 'closed')
-                            ->sum(function ($election) {
-                                $motion = $election->votingItems->first();
+                        $positionsCount = $group->elections
+                            ->where('election_type', 'positional')
+                            ->sum(fn($e) => $e->votingItems->count());
 
-                                if (!$motion) {
-                                    return 0;
-                                }
-
-                                return $motion->options->sum(function ($option) {
+                        $totalVotes = $group->elections->sum(function ($election) {
+                            return $election->votingItems->sum(function ($item) {
+                                return $item->options->sum(function ($option) {
                                     return $option->votes->count();
                                 });
                             });
+                        });
+
+                        $ongoingCount = $group->elections->where('status', 'open')->count();
+                        $closedCount  = $group->elections->where('status', 'closed')->count();
                     @endphp
 
-                    <div class="bg-white shadow rounded-2xl p-6">
+                    <div class="bg-white shadow rounded-2xl p-6 flex flex-col justify-between">
 
-                        <h2 class="text-2xl font-bold text-gray-800">
-                            {{ $group->name }}
-                        </h2>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">
+                                {{ $group->name }}
+                            </h2>
 
-                        <p class="text-gray-500 mt-2">
-                            {{ $group->description }}
-                        </p>
+                            <p class="text-gray-500 mt-2">
+                                {{ $group->description }}
+                            </p>
 
-                        <p class="text-gray-400 text-sm mt-2">
-                            Code: {{ $group->code }}
-                        </p>
+                            <p class="text-gray-400 text-sm mt-1">
+                                Code: {{ $group->code }}
+                            </p>
 
-                        <div class="grid grid-cols-2 gap-4 mt-6">
+                            <div class="grid grid-cols-2 gap-4 mt-6">
 
-                            <div class="bg-gray-50 rounded-lg p-4">
-                                <p class="text-sm text-gray-500">
-                                    Completed Motions
-                                </p>
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <p class="text-sm text-gray-500">Total Motions</p>
+                                    <p class="text-3xl font-bold mt-1 text-gray-800">{{ $motionsCount }}</p>
+                                </div>
 
-                                <p class="text-3xl font-bold mt-1">
-                                    {{ $completedMotionsCount }}
-                                </p>
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <p class="text-sm text-gray-500">Total Positions</p>
+                                    <p class="text-3xl font-bold mt-1 text-gray-800">{{ $positionsCount }}</p>
+                                </div>
+
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <p class="text-sm text-gray-500">Total Votes Cast</p>
+                                    <p class="text-3xl font-bold mt-1 text-gray-800">{{ $totalVotes }}</p>
+                                </div>
+
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <p class="text-sm text-gray-500">Status</p>
+                                    <p class="text-base font-semibold mt-1 text-gray-800">
+                                        {{ $ongoingCount }} ongoing, {{ $closedCount }} closed
+                                    </p>
+                                </div>
+
                             </div>
-
-                            <div class="bg-gray-50 rounded-lg p-4">
-                                <p class="text-sm text-gray-500">
-                                    Votes Cast
-                                </p>
-
-                                <p class="text-3xl font-bold mt-1">
-                                    {{ $totalVotes }}
-                                </p>
-                            </div>
-
                         </div>
 
-                        <a href="{{ route('reports.group.pdf', $group) }}"
-                           style="display:inline-block; margin-top:20px; background:#dc2626; color:white; padding:10px 16px; border-radius:8px; text-decoration:none; font-weight:600;">
-                            Download Report
-                        </a>
+                        <div class="mt-6">
+                            <a href="{{ route('reports.group.pdf', $group) }}"
+                               class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors duration-150">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M12 10v6m0 0l-3-3m3 3l3-3M3 17v3a1 1 0 001 1h16a1 1 0 001-1v-3" />
+                                </svg>
+                                Download PDF Report
+                            </a>
+                        </div>
 
                     </div>
 
                 @empty
 
-                    <div class="bg-white shadow rounded-2xl p-6">
+                    <div class="col-span-2 bg-white shadow rounded-2xl p-6">
                         <p class="text-gray-500">
                             No meetings available for reporting.
                         </p>

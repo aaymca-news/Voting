@@ -11,7 +11,13 @@ class ElectionOption extends Model
         'voting_item_id',
         'name',
         'description',
+        'photo_path',
     ];
+
+    public function photoUrl(): ?string
+    {
+        return $this->photo_path ? asset('storage/' . $this->photo_path) : null;
+    }
 
     public function election()
     {

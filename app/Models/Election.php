@@ -7,15 +7,26 @@ use Illuminate\Database\Eloquent\Model;
 class Election extends Model
 {
     protected $fillable = [
-    'group_id',
-    'title',
-    'description',
-    'status',
-    'starts_at',
-    'ends_at',
-    'is_active',
-    'show_results_after_end',
-];
+        'group_id',
+        'title',
+        'description',
+        'status',
+        'election_type',
+        'starts_at',
+        'ends_at',
+        'is_active',
+        'show_results_after_end',
+    ];
+
+    public function isPositional(): bool
+    {
+        return $this->election_type === 'positional';
+    }
+
+    public function isMotion(): bool
+    {
+        return $this->election_type === 'motion';
+    }
 
     protected $casts = [
         'starts_at' => 'datetime',

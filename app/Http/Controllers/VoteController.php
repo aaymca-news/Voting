@@ -7,6 +7,7 @@ use App\Models\Vote;
 use App\Models\VotingItem;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 
 class VoteController extends Controller
 {
@@ -44,38 +45,35 @@ class VoteController extends Controller
     public function store(Request $request, Election $election)
     {
         if (auth()->user()->isAdmin()) {
-            return redirect()
-                ->back()
-                ->with('error', 'Admins cannot vote.');
-        }
-
-        if ($election->status !== 'open') {
-            return redirect()
-                ->back()
-                ->with('error', 'Voting is closed for this motion.');
+            return redirect()->back()->with('error', 'Admins cannot vote.');
         }
 
         $request->validate([
             'election_option_id' => ['required', 'exists:election_options,id'],
-            'voting_item_id' => ['required', 'exists:voting_items,id'],
+            'voting_item_id'     => ['required', 'exists:voting_items,id'],
         ]);
 
         $votingItem = VotingItem::findOrFail($request->voting_item_id);
 
         if ($votingItem->election_id !== $election->id) {
-            return redirect()
-                ->back()
-                ->with('error', 'Invalid voting motion.');
+            return redirect()->back()->with('error', 'Invalid voting item.');
         }
 
-        $optionBelongsToMotion = $votingItem->options()
+        // Motions: check election-level status; positional elections: check position-level status
+        if ($election->isMotion() && $election->status !== 'open') {
+            return redirect()->back()->with('error', 'Voting is closed for this motion.');
+        }
+
+        if ($election->isPositional() && $votingItem->status !== 'open') {
+            return redirect()->back()->with('error', 'Voting is closed for this position.');
+        }
+
+        $optionBelongsToItem = $votingItem->options()
             ->where('id', $request->election_option_id)
             ->exists();
 
-        if (!$optionBelongsToMotion) {
-            return redirect()
-                ->back()
-                ->with('error', 'Invalid voting option.');
+        if (!$optionBelongsToItem) {
+            return redirect()->back()->with('error', 'Invalid voting option.');
         }
 
         $alreadyVoted = Vote::where('user_id', auth()->id())
@@ -83,21 +81,24 @@ class VoteController extends Controller
             ->exists();
 
         if ($alreadyVoted) {
-            return redirect()
-                ->back()
-                ->with('error', 'You have already voted on this motion.');
+            $msg = $election->isPositional()
+                ? 'You have already voted for this position.'
+                : 'You have already voted on this motion.';
+            return redirect()->back()->with('error', $msg);
         }
 
         Vote::create([
-            'user_id' => auth()->id(),
-            'election_id' => $election->id,
+            'user_id'            => auth()->id(),
+            'election_id'        => $election->id,
             'election_option_id' => $request->election_option_id,
-            'voting_item_id' => $votingItem->id,
+            'voting_item_id'     => $votingItem->id,
         ]);
 
-        return redirect()
-            ->back()
-            ->with('success', 'Vote submitted successfully.');
+        $success = $election->isPositional()
+            ? 'Vote submitted successfully for this elective position.'
+            : 'Vote submitted successfully.';
+
+        return redirect()->back()->with('success', $success);
     }
 
     public function results(Election $election)
@@ -105,6 +106,13 @@ class VoteController extends Controller
         $election->load('votingItems.options.votes.user');
 
         return view('votes.results', compact('election'));
+    }
+
+    public function positionResults(VotingItem $position)
+    {
+        $position->load(['options.votes.user', 'election.group']);
+
+        return view('votes.position-results', compact('position'));
     }
 
     public function exportPdf(Election $election)
