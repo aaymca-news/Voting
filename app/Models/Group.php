@@ -21,4 +21,9 @@ class Group extends Model
     {
         return $this->belongsToMany(User::class, 'group_members');
     }
+
+    public function agendas()
+    {
+        return $this->hasMany(MeetingAgenda::class)->latest();
+    }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\MeetingAgendaController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\ElectionController;
@@ -113,6 +114,12 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/positions/{position}/candidates', [CandidateController::class, 'store'])->name('candidates.store');
         Route::delete('/candidates/{candidate}', [CandidateController::class, 'destroy'])->name('candidates.destroy');
 
+        // Agendas
+        Route::get('/agendas', [MeetingAgendaController::class, 'index'])->name('agendas.index');
+        Route::get('/agendas/create', [MeetingAgendaController::class, 'create'])->name('agendas.create');
+        Route::post('/agendas', [MeetingAgendaController::class, 'store'])->name('agendas.store');
+        Route::delete('/agendas/{agenda}', [MeetingAgendaController::class, 'destroy'])->name('agendas.destroy');
+
         Route::get('/audit-logs', [AuditLogController::class, 'index'])
             ->name('audit-logs.index');
 
@@ -125,6 +132,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/elections/{election}/results/pdf', [VoteController::class, 'exportPdf'])
             ->name('votes.results.pdf');
     });
+
+    Route::get('/agendas/{agenda}/preview', [MeetingAgendaController::class, 'preview'])->name('agendas.preview');
+    Route::get('/agendas/{agenda}/serve', [MeetingAgendaController::class, 'serve'])->name('agendas.serve');
+    Route::get('/agendas/{agenda}/download', [MeetingAgendaController::class, 'download'])->name('agendas.download');
 
     Route::get('/elections/{election}/vote', [VoteController::class, 'show'])
         ->name('votes.show');

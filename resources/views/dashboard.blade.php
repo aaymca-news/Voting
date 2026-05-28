@@ -148,9 +148,30 @@
                     <hr class="mb-6">
 
                     <a href="{{ route('reports.index') }}"
-   style="display:inline-block; background:#dc2626; color:white; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:600;">
-    Download Reports →
-</a>
+                       style="display:inline-block; background:#dc2626; color:white; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:600;">
+                        Download Reports →
+                    </a>
+                </div>
+
+                <div class="bg-white shadow rounded-2xl p-8">
+                    <div style="width:72px; height:72px; border-radius:999px; background:#fef3c7; display:flex; align-items:center; justify-content:center; margin-bottom:28px;">
+                        <span style="font-size:34px;">📄</span>
+                    </div>
+
+                    <h2 class="text-3xl font-bold text-gray-800 mb-3">
+                        Agendas
+                    </h2>
+
+                    <p class="text-gray-500 mb-6">
+                        Upload and manage meeting agenda documents.
+                    </p>
+
+                    <hr class="mb-6">
+
+                    <a href="{{ route('agendas.index') }}"
+                       style="display:inline-block; background:#d97706; color:white; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:600;">
+                        Manage Agendas →
+                    </a>
                 </div>
 
             </div>

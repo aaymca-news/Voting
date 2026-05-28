@@ -11,6 +11,7 @@ class VoterController extends Controller
         $groups = auth()->user()
             ->groups()
             ->with([
+                'agendas',
                 'elections' => function ($query) use ($userId) {
                     $query->where(function ($q) use ($userId) {
                         // Motions that are open

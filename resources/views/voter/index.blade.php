@@ -290,6 +290,30 @@
                             <p style="color:#9ca3af; font-style:italic; font-size:14px; margin:0;">No active voting sessions in this meeting.</p>
                         @endforelse
 
+                        {{-- Agendas --}}
+                        @if($group->agendas->isNotEmpty())
+                            <div style="border-top:1px solid #e5e7eb; padding-top:16px; margin-top:4px;">
+                                <p style="font-size:12px; font-weight:700; color:#9ca3af; margin:0 0 10px 0; text-transform:uppercase; letter-spacing:0.07em;">📄 Meeting Agendas</p>
+                                <div style="display:flex; flex-direction:column; gap:8px;">
+                                    @foreach($group->agendas as $agenda)
+                                        <div style="display:flex; align-items:center; justify-content:space-between; border:1px solid #e5e7eb; border-radius:10px; padding:10px 14px; background:#fafafa; gap:10px; flex-wrap:wrap;">
+                                            <div style="display:flex; align-items:center; gap:10px;">
+                                                <span style="font-size:22px;">{{ $agenda->file_type === 'pdf' ? '📕' : '📝' }}</span>
+                                                <div>
+                                                    <p style="font-size:14px; font-weight:600; color:#1f2937; margin:0;">{{ $agenda->title }}</p>
+                                                    <p style="font-size:11px; color:#9ca3af; margin:2px 0 0 0;">{{ strtoupper($agenda->file_type) }} · {{ $agenda->created_at->format('M d, Y') }}</p>
+                                                </div>
+                                            </div>
+                                            <a href="{{ route('agendas.preview', $agenda) }}" target="_blank"
+                                               style="background:#d97706; color:white; padding:7px 16px; border-radius:7px; text-decoration:none; font-size:13px; font-weight:700; white-space:nowrap; flex-shrink:0;">
+                                                Preview →
+                                            </a>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
                     </div>
                 </div>
 
