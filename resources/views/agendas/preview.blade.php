@@ -26,7 +26,7 @@
         .topbar-meta { font-size: 12px; color: #9ca3af; margin-top: 2px; }
         .topbar-right { display: flex; gap: 10px; }
         .btn-download {
-            background: #2563eb;
+            background: #dc2626;
             color: white;
             padding: 9px 20px;
             border-radius: 8px;
@@ -93,7 +93,7 @@
             <p style="color:#6b7280; font-size:15px; margin-bottom:6px;">{{ $agenda->group->name }}</p>
             <p style="color:#9ca3af; font-size:14px; margin-bottom:28px;">Word documents cannot be previewed in the browser.</p>
             <a href="{{ route('agendas.download', $agenda) }}"
-               style="background:#2563eb; color:white; padding:13px 30px; border-radius:10px; text-decoration:none; font-size:16px; font-weight:700;">
+               style="background:#dc2626; color:white; padding:13px 30px; border-radius:10px; text-decoration:none; font-size:16px; font-weight:700;">
                 ⬇ Download to View
             </a>
         </div>

@@ -70,7 +70,7 @@
                                                 Preview
                                             </a>
                                             <a href="{{ route('agendas.download', $agenda) }}"
-                                               style="background:#6b7280; color:white; padding:6px 14px; border-radius:6px; text-decoration:none; font-size:13px; font-weight:600;">
+                                               style="background:#dc2626; color:white; padding:6px 14px; border-radius:6px; text-decoration:none; font-size:13px; font-weight:600;">
                                                 Download
                                             </a>
                                             <form method="POST" action="{{ route('agendas.destroy', $agenda) }}"

@@ -36,6 +36,39 @@
                         <p style="color:#93c5fd; font-size:12px; margin:0;">Meeting Code: {{ $group->code }}</p>
                     </div>
 
+                    {{-- Meeting Agendas (top of card) --}}
+                    @if($group->agendas->isNotEmpty())
+                        <div style="background:#fffbeb; border-bottom:1px solid #fde68a; padding:16px 24px;">
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                                <span style="font-size:16px;">📄</span>
+                                <span style="font-size:12px; font-weight:800; color:#92400e; text-transform:uppercase; letter-spacing:0.08em;">Meeting Agendas</span>
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:8px;">
+                                @foreach($group->agendas as $agenda)
+                                    <div style="display:flex; align-items:center; justify-content:space-between; background:white; border:1px solid #fde68a; border-radius:10px; padding:11px 16px; gap:10px; flex-wrap:wrap;">
+                                        <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+                                            <span style="font-size:24px; flex-shrink:0;">{{ $agenda->file_type === 'pdf' ? '📕' : '📝' }}</span>
+                                            <div style="min-width:0;">
+                                                <p style="font-size:14px; font-weight:700; color:#1f2937; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ $agenda->title }}</p>
+                                                <p style="font-size:11px; color:#9ca3af; margin:2px 0 0 0;">{{ strtoupper($agenda->file_type) }} &middot; {{ $agenda->created_at->format('M d, Y') }}</p>
+                                            </div>
+                                        </div>
+                                        <div style="display:flex; gap:8px; flex-shrink:0;">
+                                            <a href="{{ route('agendas.preview', $agenda) }}" target="_blank"
+                                               style="background:#d97706; color:white; padding:8px 18px; border-radius:7px; text-decoration:none; font-size:13px; font-weight:700; white-space:nowrap;">
+                                                Preview →
+                                            </a>
+                                            <a href="{{ route('agendas.download', $agenda) }}"
+                                               style="background:#dc2626; color:white; padding:8px 18px; border-radius:7px; text-decoration:none; font-size:13px; font-weight:700; white-space:nowrap;">
+                                                Download
+                                            </a>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
                     {{-- Elections & Motions --}}
                     <div style="padding:20px 24px; display:flex; flex-direction:column; gap:14px;">
 
@@ -60,15 +93,18 @@
                                                     <p style="color:#6b7280; font-size:13px; margin:0;">{{ $election->description }}</p>
                                                 @endif
                                             </div>
-                                            @if($userVote)
-                                                <span style="background:#dcfce7; color:#15803d; font-size:12px; font-weight:700; padding:4px 12px; border-radius:999px; white-space:nowrap; flex-shrink:0;">✓ Voted</span>
-                                            @elseif($motion->status === 'open')
-                                                <span style="background:#dcfce7; color:#15803d; font-size:12px; font-weight:700; padding:4px 12px; border-radius:999px; white-space:nowrap; flex-shrink:0; animation:pulse 2s infinite;">● Voting Open</span>
-                                            @elseif($motion->status === 'closed')
-                                                <span style="background:#f3f4f6; color:#6b7280; font-size:12px; font-weight:700; padding:4px 12px; border-radius:999px; white-space:nowrap; flex-shrink:0;">Closed</span>
-                                            @else
-                                                <span style="background:#fef9c3; color:#854d0e; font-size:12px; font-weight:700; padding:4px 12px; border-radius:999px; white-space:nowrap; flex-shrink:0;">Not Started</span>
-                                            @endif
+                                            <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; flex-shrink:0;">
+                                                @if($userVote)
+                                                    <span style="background:#dcfce7; color:#15803d; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px;">✓ Voted</span>
+                                                @endif
+                                                @if($motion->status === 'open')
+                                                    <span style="background:#dcfce7; color:#15803d; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px;">Open</span>
+                                                @elseif($motion->status === 'closed')
+                                                    <span style="background:#f3f4f6; color:#6b7280; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px;">Closed</span>
+                                                @else
+                                                    <span style="background:#fef9c3; color:#854d0e; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px;">Not Started</span>
+                                                @endif
+                                            </div>
                                         </div>
 
                                         <div style="padding:14px 18px;">
@@ -289,30 +325,6 @@
                         @empty
                             <p style="color:#9ca3af; font-style:italic; font-size:14px; margin:0;">No active voting sessions in this meeting.</p>
                         @endforelse
-
-                        {{-- Agendas --}}
-                        @if($group->agendas->isNotEmpty())
-                            <div style="border-top:1px solid #e5e7eb; padding-top:16px; margin-top:4px;">
-                                <p style="font-size:12px; font-weight:700; color:#9ca3af; margin:0 0 10px 0; text-transform:uppercase; letter-spacing:0.07em;">📄 Meeting Agendas</p>
-                                <div style="display:flex; flex-direction:column; gap:8px;">
-                                    @foreach($group->agendas as $agenda)
-                                        <div style="display:flex; align-items:center; justify-content:space-between; border:1px solid #e5e7eb; border-radius:10px; padding:10px 14px; background:#fafafa; gap:10px; flex-wrap:wrap;">
-                                            <div style="display:flex; align-items:center; gap:10px;">
-                                                <span style="font-size:22px;">{{ $agenda->file_type === 'pdf' ? '📕' : '📝' }}</span>
-                                                <div>
-                                                    <p style="font-size:14px; font-weight:600; color:#1f2937; margin:0;">{{ $agenda->title }}</p>
-                                                    <p style="font-size:11px; color:#9ca3af; margin:2px 0 0 0;">{{ strtoupper($agenda->file_type) }} · {{ $agenda->created_at->format('M d, Y') }}</p>
-                                                </div>
-                                            </div>
-                                            <a href="{{ route('agendas.preview', $agenda) }}" target="_blank"
-                                               style="background:#d97706; color:white; padding:7px 16px; border-radius:7px; text-decoration:none; font-size:13px; font-weight:700; white-space:nowrap; flex-shrink:0;">
-                                                Preview →
-                                            </a>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
 
                     </div>
                 </div>

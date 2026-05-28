@@ -1,297 +1,179 @@
 <x-app-layout>
-    <div class="py-8">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div style="background:#f1f5f9; min-height:100vh; padding:36px 0 56px;">
+        <div style="max-width:1280px; margin:0 auto; padding:0 24px;">
 
-            <div class="mb-8">
-                <h1 class="text-4xl font-bold text-gray-800">
-                    AAYMCA Voting Dashboard
-                </h1>
-
-                <p class="text-gray-500 mt-2">
-                    Manage elections, motions, users, meetings and voting activity.
-                </p>
+            {{-- ── HEADER ── --}}
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:36px;">
+                <div>
+                    <p style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.1em; margin:0 0 6px 0;">AAYMCA Voting Platform</p>
+                    <h1 style="font-size:26px; font-weight:800; color:#0f172a; margin:0; letter-spacing:-0.02em;">Admin Dashboard</h1>
+                </div>
+                <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; padding:10px 16px; display:flex; align-items:center; gap:10px;">
+                    <div style="width:34px; height:34px; border-radius:50%; background:#e0e7ff; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">👤</div>
+                    <div>
+                        <p style="font-size:13px; font-weight:700; color:#0f172a; margin:0; line-height:1.3;">{{ auth()->user()->name }}</p>
+                        <p style="font-size:11px; color:#94a3b8; margin:0;">Super Administrator</p>
+                    </div>
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+            {{-- ── TOP STATS ── --}}
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4" style="margin-bottom:32px;">
 
-                <div class="bg-white shadow rounded-2xl p-8">
-                    <div style="width:72px; height:72px; border-radius:999px; background:#eff6ff; display:flex; align-items:center; justify-content:center; margin-bottom:28px;">
-                        <span style="font-size:34px;">👥</span>
+                <div style="background:white; border:1px solid #e2e8f0; border-radius:14px; padding:20px 22px;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
+                        <div style="width:42px; height:42px; border-radius:11px; background:#eff6ff; display:flex; align-items:center; justify-content:center; font-size:19px;">👥</div>
+                        <span style="font-size:10px; font-weight:700; color:#cbd5e1; text-transform:uppercase; letter-spacing:0.07em;">Users</span>
                     </div>
-
-                    <h2 class="text-3xl font-bold text-gray-800 mb-3">
-                        Meetings
-                    </h2>
-
-                    <p class="text-gray-500 mb-6">
-                        Create and manage meeting groups.
-                    </p>
-
-                    <hr class="mb-6">
-
-                    <a href="{{ route('groups.index') }}"
-                       style="display:inline-block; background:#2563eb; color:white; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:600;">
-                        Create Meeting →
-                    </a>
+                    <p style="font-size:34px; font-weight:800; color:#0f172a; margin:0 0 3px; line-height:1;">{{ $totalUsers }}</p>
+                    <p style="font-size:12px; color:#94a3b8; margin:0;">{{ $totalVoters }} voters · {{ $totalAdmins }} admins</p>
                 </div>
 
-                <div class="bg-white shadow rounded-2xl p-8">
-                    <div style="width:72px; height:72px; border-radius:999px; background:#dcfce7; display:flex; align-items:center; justify-content:center; margin-bottom:28px;">
-                        <span style="font-size:34px;">📋</span>
+                <div style="background:white; border:1px solid #e2e8f0; border-radius:14px; padding:20px 22px;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
+                        <div style="width:42px; height:42px; border-radius:11px; background:#f0fdf4; display:flex; align-items:center; justify-content:center; font-size:19px;">🏛️</div>
+                        <span style="font-size:10px; font-weight:700; color:#cbd5e1; text-transform:uppercase; letter-spacing:0.07em;">Groups</span>
                     </div>
-
-                    <h2 class="text-3xl font-bold text-gray-800 mb-3">
-                        Motions
-                    </h2>
-
-                    <p class="text-gray-500 mb-6">
-                        Create and manage motion sessions.
-                    </p>
-
-                    <hr class="mb-6">
-
-                    <a href="{{ route('elections.index') }}"
-                       style="display:inline-block; background:#16a34a; color:white; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:600;">
-                        Create Motion →
-                    </a>
+                    <p style="font-size:34px; font-weight:800; color:#0f172a; margin:0 0 3px; line-height:1;">{{ $totalGroups }}</p>
+                    <p style="font-size:12px; color:#94a3b8; margin:0;">Voting groups created</p>
                 </div>
 
-                <div class="bg-white shadow rounded-2xl p-8">
-                    <div style="width:72px; height:72px; border-radius:999px; background:#dbeafe; display:flex; align-items:center; justify-content:center; margin-bottom:28px;">
-                        <span style="font-size:34px;">🗳️</span>
+                <div style="background:white; border:1px solid #e2e8f0; border-radius:14px; padding:20px 22px;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
+                        <div style="width:42px; height:42px; border-radius:11px; background:#eef2ff; display:flex; align-items:center; justify-content:center; font-size:19px;">🗳️</div>
+                        <span style="font-size:10px; font-weight:700; color:#cbd5e1; text-transform:uppercase; letter-spacing:0.07em;">Sessions</span>
                     </div>
-
-                    <h2 class="text-3xl font-bold text-gray-800 mb-3">
-                        Elections
-                    </h2>
-
-                    <p class="text-gray-500 mb-6">
-                        Set up positional elections with candidates and photos.
-                    </p>
-
-                    <hr class="mb-6">
-
-                    <a href="{{ route('positional-elections.index') }}"
-                       style="display:inline-block; background:#2563eb; color:white; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:600;">
-                        Manage Elections →
-                    </a>
+                    <p style="font-size:34px; font-weight:800; color:#0f172a; margin:0 0 3px; line-height:1;">{{ $totalElections }}</p>
+                    <p style="font-size:12px; color:#94a3b8; margin:0;">Election sessions</p>
                 </div>
 
-                <div class="bg-white shadow rounded-2xl p-8">
-                    <div style="width:72px; height:72px; border-radius:999px; background:#f3e8ff; display:flex; align-items:center; justify-content:center; margin-bottom:28px;">
-                        <span style="font-size:34px;">📊</span>
+                <div style="background:white; border:1px solid #e2e8f0; border-radius:14px; padding:20px 22px;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
+                        <div style="width:42px; height:42px; border-radius:11px; background:#faf5ff; display:flex; align-items:center; justify-content:center; font-size:19px;">📊</div>
+                        <span style="font-size:10px; font-weight:700; color:#cbd5e1; text-transform:uppercase; letter-spacing:0.07em;">Votes</span>
                     </div>
-
-                    <h2 class="text-3xl font-bold text-gray-800 mb-3">
-                        Votes
-                    </h2>
-
-                    <p class="text-gray-500 mb-6">
-                        Track voting activity and turnout.
-                    </p>
-
-                    <hr class="mb-6">
-
-                    <a href="{{ route('votes.index') }}"
-                       style="display:inline-block; background:#9333ea; color:white; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:600;">
-                        Manage Votes →
-                    </a>
-                </div>
-
-                <div class="bg-white shadow rounded-2xl p-8">
-                    <div style="width:72px; height:72px; border-radius:999px; background:#ffedd5; display:flex; align-items:center; justify-content:center; margin-bottom:28px;">
-                        <span style="font-size:34px;">👤</span>
-                    </div>
-
-                    <h2 class="text-3xl font-bold text-gray-800 mb-3">
-                        Users
-                    </h2>
-
-                    <p class="text-gray-500 mb-6">
-                        View registered platform users.
-                    </p>
-
-                    <hr class="mb-6">
-
-                    <a href="{{ route('users.index') }}"
-                       style="display:inline-block; background:#f59e0b; color:white; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:600;">
-                        Manage Users →
-                    </a>
-                </div>
-
-                <div class="bg-white shadow rounded-2xl p-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-3">
-                        Audit Logs
-                    </h2>
-
-                    <p class="text-gray-500 mb-6">
-                        Track all admin and system activities.
-                    </p>
-
-                    <hr class="mb-6">
-
-                    <a href="{{ route('audit-logs.index') }}"
-                       style="display:inline-block; background:#0f172a; color:white; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:600;">
-                        View Logs →
-                    </a>
-                </div>
-
-                <div class="bg-white shadow rounded-2xl p-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-3">
-                        Election Reports
-                    </h2>
-
-                    <p class="text-gray-500 mb-6">
-                        View results and download PDF election reports.
-                    </p>
-
-                    <hr class="mb-6">
-
-                    <a href="{{ route('reports.index') }}"
-                       style="display:inline-block; background:#dc2626; color:white; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:600;">
-                        Download Reports →
-                    </a>
-                </div>
-
-                <div class="bg-white shadow rounded-2xl p-8">
-                    <div style="width:72px; height:72px; border-radius:999px; background:#fef3c7; display:flex; align-items:center; justify-content:center; margin-bottom:28px;">
-                        <span style="font-size:34px;">📄</span>
-                    </div>
-
-                    <h2 class="text-3xl font-bold text-gray-800 mb-3">
-                        Agendas
-                    </h2>
-
-                    <p class="text-gray-500 mb-6">
-                        Upload and manage meeting agenda documents.
-                    </p>
-
-                    <hr class="mb-6">
-
-                    <a href="{{ route('agendas.index') }}"
-                       style="display:inline-block; background:#d97706; color:white; padding:12px 28px; border-radius:8px; text-decoration:none; font-weight:600;">
-                        Manage Agendas →
-                    </a>
+                    <p style="font-size:34px; font-weight:800; color:#0f172a; margin:0 0 3px; line-height:1;">{{ $totalVotes }}</p>
+                    <p style="font-size:12px; color:#94a3b8; margin:0;">Total votes cast</p>
                 </div>
 
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            {{-- ── QUICK ACCESS LABEL ── --}}
+            <p style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.09em; margin:0 0 14px;">Quick Access</p>
 
-                <div class="bg-white shadow rounded-2xl p-6">
-                    <h2 class="text-gray-500 font-semibold">
-                        Total Users
-                    </h2>
+            {{-- ── ACTION CARDS ── --}}
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4" style="margin-bottom:32px;">
 
-                    <p class="text-4xl font-bold mt-3">
-                        {{ $totalUsers }}
-                    </p>
+                {{-- Meetings --}}
+                <a href="{{ route('groups.index') }}"
+                   style="display:flex; flex-direction:column; background:white; border:1px solid #e2e8f0; border-radius:14px; padding:22px; text-decoration:none; position:relative; overflow:hidden;">
+                    <div style="position:absolute; top:0; left:0; right:0; height:3px; background:#2563eb; border-radius:14px 14px 0 0;"></div>
+                    <div style="width:46px; height:46px; border-radius:12px; background:#eff6ff; display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:14px;">🤝</div>
+                    <h3 style="font-size:14px; font-weight:700; color:#0f172a; margin:0 0 5px;">Meetings</h3>
+                    <p style="font-size:12px; color:#94a3b8; margin:0 0 18px; line-height:1.5; flex:1;">Manage meeting groups and members</p>
+                    <span style="font-size:12px; font-weight:700; color:#2563eb;">Manage →</span>
+                </a>
 
-                    <p class="text-sm text-gray-400 mt-2">
-                        {{ $totalVoters }} voters, {{ $totalAdmins }} admins
-                    </p>
-                </div>
+                {{-- Motions --}}
+                <a href="{{ route('elections.index') }}"
+                   style="display:flex; flex-direction:column; background:white; border:1px solid #e2e8f0; border-radius:14px; padding:22px; text-decoration:none; position:relative; overflow:hidden;">
+                    <div style="position:absolute; top:0; left:0; right:0; height:3px; background:#16a34a; border-radius:14px 14px 0 0;"></div>
+                    <div style="width:46px; height:46px; border-radius:12px; background:#f0fdf4; display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:14px;">✋</div>
+                    <h3 style="font-size:14px; font-weight:700; color:#0f172a; margin:0 0 5px;">Motions</h3>
+                    <p style="font-size:12px; color:#94a3b8; margin:0 0 18px; line-height:1.5; flex:1;">Create and manage motion sessions</p>
+                    <span style="font-size:12px; font-weight:700; color:#16a34a;">Manage →</span>
+                </a>
 
-                <div class="bg-white shadow rounded-2xl p-6">
-                    <h2 class="text-gray-500 font-semibold">
-                        Groups
-                    </h2>
+                {{-- Elections --}}
+                <a href="{{ route('positional-elections.index') }}"
+                   style="display:flex; flex-direction:column; background:white; border:1px solid #e2e8f0; border-radius:14px; padding:22px; text-decoration:none; position:relative; overflow:hidden;">
+                    <div style="position:absolute; top:0; left:0; right:0; height:3px; background:#4f46e5; border-radius:14px 14px 0 0;"></div>
+                    <div style="width:46px; height:46px; border-radius:12px; background:#eef2ff; display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:14px;">🗳️</div>
+                    <h3 style="font-size:14px; font-weight:700; color:#0f172a; margin:0 0 5px;">Elections</h3>
+                    <p style="font-size:12px; color:#94a3b8; margin:0 0 18px; line-height:1.5; flex:1;">Positional elections with candidates</p>
+                    <span style="font-size:12px; font-weight:700; color:#4f46e5;">Manage →</span>
+                </a>
 
-                    <p class="text-4xl font-bold mt-3">
-                        {{ $totalGroups }}
-                    </p>
+                {{-- Votes --}}
+                <a href="{{ route('votes.index') }}"
+                   style="display:flex; flex-direction:column; background:white; border:1px solid #e2e8f0; border-radius:14px; padding:22px; text-decoration:none; position:relative; overflow:hidden;">
+                    <div style="position:absolute; top:0; left:0; right:0; height:3px; background:#9333ea; border-radius:14px 14px 0 0;"></div>
+                    <div style="width:46px; height:46px; border-radius:12px; background:#faf5ff; display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:14px;">📊</div>
+                    <h3 style="font-size:14px; font-weight:700; color:#0f172a; margin:0 0 5px;">Votes</h3>
+                    <p style="font-size:12px; color:#94a3b8; margin:0 0 18px; line-height:1.5; flex:1;">Track voting activity and turnout</p>
+                    <span style="font-size:12px; font-weight:700; color:#9333ea;">Manage →</span>
+                </a>
 
-                    <p class="text-sm text-gray-400 mt-2">
-                        Voting groups created
-                    </p>
-                </div>
+                {{-- Users --}}
+                <a href="{{ route('users.index') }}"
+                   style="display:flex; flex-direction:column; background:white; border:1px solid #e2e8f0; border-radius:14px; padding:22px; text-decoration:none; position:relative; overflow:hidden;">
+                    <div style="position:absolute; top:0; left:0; right:0; height:3px; background:#d97706; border-radius:14px 14px 0 0;"></div>
+                    <div style="width:46px; height:46px; border-radius:12px; background:#fffbeb; display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:14px;">👤</div>
+                    <h3 style="font-size:14px; font-weight:700; color:#0f172a; margin:0 0 5px;">Users</h3>
+                    <p style="font-size:12px; color:#94a3b8; margin:0 0 18px; line-height:1.5; flex:1;">View and manage registered users</p>
+                    <span style="font-size:12px; font-weight:700; color:#d97706;">Manage →</span>
+                </a>
 
-                <div class="bg-white shadow rounded-2xl p-6">
-                    <h2 class="text-gray-500 font-semibold">
-                        Meetings / Elections
-                    </h2>
+                {{-- Audit Logs --}}
+                <a href="{{ route('audit-logs.index') }}"
+                   style="display:flex; flex-direction:column; background:white; border:1px solid #e2e8f0; border-radius:14px; padding:22px; text-decoration:none; position:relative; overflow:hidden;">
+                    <div style="position:absolute; top:0; left:0; right:0; height:3px; background:#475569; border-radius:14px 14px 0 0;"></div>
+                    <div style="width:46px; height:46px; border-radius:12px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:14px;">🔍</div>
+                    <h3 style="font-size:14px; font-weight:700; color:#0f172a; margin:0 0 5px;">Audit Logs</h3>
+                    <p style="font-size:12px; color:#94a3b8; margin:0 0 18px; line-height:1.5; flex:1;">Track all admin and system activity</p>
+                    <span style="font-size:12px; font-weight:700; color:#475569;">View Logs →</span>
+                </a>
 
-                    <p class="text-4xl font-bold mt-3">
-                        {{ $totalElections }}
-                    </p>
+                {{-- Reports --}}
+                <a href="{{ route('reports.index') }}"
+                   style="display:flex; flex-direction:column; background:white; border:1px solid #e2e8f0; border-radius:14px; padding:22px; text-decoration:none; position:relative; overflow:hidden;">
+                    <div style="position:absolute; top:0; left:0; right:0; height:3px; background:#dc2626; border-radius:14px 14px 0 0;"></div>
+                    <div style="width:46px; height:46px; border-radius:12px; background:#fef2f2; display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:14px;">📈</div>
+                    <h3 style="font-size:14px; font-weight:700; color:#0f172a; margin:0 0 5px;">Reports</h3>
+                    <p style="font-size:12px; color:#94a3b8; margin:0 0 18px; line-height:1.5; flex:1;">Download PDF election results</p>
+                    <span style="font-size:12px; font-weight:700; color:#dc2626;">Download →</span>
+                </a>
 
-                    <p class="text-sm text-gray-400 mt-2">
-                        Election sessions created
-                    </p>
-                </div>
-
-                <div class="bg-white shadow rounded-2xl p-6">
-                    <h2 class="text-gray-500 font-semibold">
-                        Votes Cast
-                    </h2>
-
-                    <p class="text-4xl font-bold mt-3">
-                        {{ $totalVotes }}
-                    </p>
-
-                    <p class="text-sm text-gray-400 mt-2">
-                        Total submitted votes
-                    </p>
-                </div>
+                {{-- Agendas --}}
+                <a href="{{ route('agendas.index') }}"
+                   style="display:flex; flex-direction:column; background:white; border:1px solid #e2e8f0; border-radius:14px; padding:22px; text-decoration:none; position:relative; overflow:hidden;">
+                    <div style="position:absolute; top:0; left:0; right:0; height:3px; background:#ea580c; border-radius:14px 14px 0 0;"></div>
+                    <div style="width:46px; height:46px; border-radius:12px; background:#fff7ed; display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:14px;">📄</div>
+                    <h3 style="font-size:14px; font-weight:700; color:#0f172a; margin:0 0 5px;">Agendas</h3>
+                    <p style="font-size:12px; color:#94a3b8; margin:0 0 18px; line-height:1.5; flex:1;">Upload and manage agenda documents</p>
+                    <span style="font-size:12px; font-weight:700; color:#ea580c;">Manage →</span>
+                </a>
 
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {{-- ── MOTION OVERVIEW LABEL ── --}}
+            <p style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.09em; margin:0 0 14px;">Motion Overview</p>
 
-                <div class="bg-white shadow rounded-2xl p-6">
-                    <h2 class="text-gray-500 font-semibold">
-                        Motions / Agendas
-                    </h2>
+            {{-- ── MOTION STATUS CARDS ── --}}
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
-                    <p class="text-4xl font-bold mt-3">
-                        {{ $totalVotingItems }}
-                    </p>
-
-                    <p class="text-sm text-gray-400 mt-2">
-                        Total voting items
-                    </p>
+                <div style="background:white; border:1px solid #e2e8f0; border-radius:14px; padding:20px 22px;">
+                    <div style="width:42px; height:42px; border-radius:11px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; font-size:19px; margin-bottom:14px;">📋</div>
+                    <p style="font-size:34px; font-weight:800; color:#0f172a; margin:0 0 3px; line-height:1;">{{ $totalVotingItems }}</p>
+                    <p style="font-size:12px; color:#94a3b8; margin:0;">Total voting items</p>
                 </div>
 
-                <div class="bg-white shadow rounded-2xl p-6">
-                    <h2 class="text-gray-500 font-semibold">
-                        Open Motions
-                    </h2>
-
-                    <p class="text-4xl font-bold mt-3 text-green-600">
-                        {{ $openMotions }}
-                    </p>
-
-                    <p class="text-sm text-gray-400 mt-2">
-                        Currently open for voting
-                    </p>
+                <div style="background:white; border:1px solid #e2e8f0; border-radius:14px; padding:20px 22px;">
+                    <div style="width:42px; height:42px; border-radius:11px; background:#f0fdf4; display:flex; align-items:center; justify-content:center; font-size:19px; margin-bottom:14px;">✅</div>
+                    <p style="font-size:34px; font-weight:800; color:#16a34a; margin:0 0 3px; line-height:1;">{{ $openMotions }}</p>
+                    <p style="font-size:12px; color:#94a3b8; margin:0;">Open for voting</p>
                 </div>
 
-                <div class="bg-white shadow rounded-2xl p-6">
-                    <h2 class="text-gray-500 font-semibold">
-                        Closed Motions
-                    </h2>
-
-                    <p class="text-4xl font-bold mt-3 text-red-600">
-                        {{ $closedMotions }}
-                    </p>
-
-                    <p class="text-sm text-gray-400 mt-2">
-                        Voting completed
-                    </p>
+                <div style="background:white; border:1px solid #e2e8f0; border-radius:14px; padding:20px 22px;">
+                    <div style="width:42px; height:42px; border-radius:11px; background:#fef2f2; display:flex; align-items:center; justify-content:center; font-size:19px; margin-bottom:14px;">🔒</div>
+                    <p style="font-size:34px; font-weight:800; color:#dc2626; margin:0 0 3px; line-height:1;">{{ $closedMotions }}</p>
+                    <p style="font-size:12px; color:#94a3b8; margin:0;">Voting completed</p>
                 </div>
 
-                <div class="bg-white shadow rounded-2xl p-6">
-                    <h2 class="text-gray-500 font-semibold">
-                        Draft Motions
-                    </h2>
-
-                    <p class="text-4xl font-bold mt-3 text-gray-600">
-                        {{ $draftMotions }}
-                    </p>
-
-                    <p class="text-sm text-gray-400 mt-2">
-                        Not yet opened
-                    </p>
+                <div style="background:white; border:1px solid #e2e8f0; border-radius:14px; padding:20px 22px;">
+                    <div style="width:42px; height:42px; border-radius:11px; background:#fefce8; display:flex; align-items:center; justify-content:center; font-size:19px; margin-bottom:14px;">✏️</div>
+                    <p style="font-size:34px; font-weight:800; color:#ca8a04; margin:0 0 3px; line-height:1;">{{ $draftMotions }}</p>
+                    <p style="font-size:12px; color:#94a3b8; margin:0;">Not yet opened</p>
                 </div>
 
             </div>

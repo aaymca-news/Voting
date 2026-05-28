@@ -43,6 +43,7 @@ class GroupController extends Controller
         $group->load([
             'users',
             'elections.votingItems',
+            'agendas',
         ]);
 
         $users = User::whereNotIn('role', ['admin', 'super_admin'])

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Group;
 use App\Models\MeetingAgenda;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class MeetingAgendaController extends Controller
@@ -33,16 +34,23 @@ class MeetingAgendaController extends Controller
         $extension = strtolower($file->getClientOriginalExtension());
         $filename  = uniqid('agenda_') . '.' . $extension;
 
-        $file->storeAs('agendas', $filename);
+        Storage::putFileAs('agendas', $file, $filename);
 
         MeetingAgenda::create([
             'group_id'          => $request->group_id,
-            'uploaded_by'       => auth()->id(),
+            'uploaded_by'       => Auth::id(),
             'title'             => $request->title,
             'file_path'         => $filename,
             'original_filename' => $file->getClientOriginalName(),
             'file_type'         => $extension === 'pdf' ? 'pdf' : 'docx',
         ]);
+
+        $referer = url()->previous();
+        $fromGroup = str_contains($referer, '/groups/');
+
+        if ($fromGroup) {
+            return redirect()->route('groups.show', $request->group_id)->with('success', 'Agenda uploaded successfully.');
+        }
 
         return redirect()->route('agendas.index')->with('success', 'Agenda uploaded successfully.');
     }
@@ -57,12 +65,11 @@ class MeetingAgendaController extends Controller
     {
         $this->authorizeAccess($agenda);
 
-        $path = storage_path('app/agendas/' . $agenda->file_path);
-
-        if (!file_exists($path)) {
+        if (!Storage::exists('agendas/' . $agenda->file_path)) {
             abort(404, 'File not found.');
         }
 
+        $path     = Storage::path('agendas/' . $agenda->file_path);
         $mimeType = $agenda->file_type === 'pdf'
             ? 'application/pdf'
             : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
@@ -77,13 +84,14 @@ class MeetingAgendaController extends Controller
     {
         $this->authorizeAccess($agenda);
 
-        $path = storage_path('app/agendas/' . $agenda->file_path);
-
-        if (!file_exists($path)) {
+        if (!Storage::exists('agendas/' . $agenda->file_path)) {
             abort(404, 'File not found.');
         }
 
-        return response()->download($path, $agenda->original_filename);
+        return response()->download(
+            Storage::path('agendas/' . $agenda->file_path),
+            $agenda->original_filename
+        );
     }
 
     public function destroy(MeetingAgenda $agenda)
@@ -96,7 +104,7 @@ class MeetingAgendaController extends Controller
 
     private function authorizeAccess(MeetingAgenda $agenda): void
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         if ($user->isAdmin()) {
             return;

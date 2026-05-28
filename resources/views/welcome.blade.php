@@ -135,17 +135,6 @@
             background: var(--red);
         }
 
-        .hero-logo {
-            margin: 0 auto 2.5rem;
-            max-width: 320px;
-        }
-        .hero-logo img {
-            width: 100%;
-            height: auto;
-            filter: brightness(0) invert(1);
-            opacity: 0.92;
-        }
-
         .hero h1 {
             font-family: 'Barlow Condensed', sans-serif;
             font-weight: 800;
@@ -421,9 +410,6 @@
     {{-- ── HERO ── --}}
     <section class="hero">
         <div class="hero-eyebrow fade-up">Africa Alliance of YMCAs</div>
-        <div class="hero-logo fade-up">
-            <img src="{{ asset('images/logo.png') }}" alt="AAYMCA Africa Alliance">
-        </div>
         <h1 class="fade-up">
             Voting
             <span>Platform</span>

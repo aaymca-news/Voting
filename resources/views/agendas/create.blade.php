@@ -2,9 +2,16 @@
     <div class="py-8">
         <div style="max-width:600px; margin:0 auto; padding:0 20px;">
 
+            @php $preselectedGroupId = request('group_id'); @endphp
+
             <div style="margin-bottom:24px;">
-                <a href="{{ route('agendas.index') }}"
-                   style="color:#6b7280; text-decoration:none; font-size:14px;">← Back to Agendas</a>
+                @if($preselectedGroupId)
+                    <a href="{{ route('groups.show', $preselectedGroupId) }}"
+                       style="color:#6b7280; text-decoration:none; font-size:14px;">← Back to Meeting</a>
+                @else
+                    <a href="{{ route('agendas.index') }}"
+                       style="color:#6b7280; text-decoration:none; font-size:14px;">← Back to Agendas</a>
+                @endif
                 <h1 style="font-size:24px; font-weight:800; color:#111827; margin:10px 0 4px 0;">Upload Meeting Agenda</h1>
                 <p style="color:#6b7280; font-size:14px; margin:0;">Upload a PDF or Word document and assign it to a meeting group.</p>
             </div>
@@ -33,21 +40,34 @@
                                onfocus="this.style.borderColor='#d97706'" onblur="this.style.borderColor='#d1d5db'">
                     </div>
 
-                    <div style="margin-bottom:20px;">
-                        <label style="display:block; font-size:14px; font-weight:600; color:#374151; margin-bottom:6px;">
-                            Assign to Meeting <span style="color:#dc2626;">*</span>
-                        </label>
-                        <select name="group_id" required
-                                style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:10px 14px; font-size:14px; box-sizing:border-box; background:white; outline:none;"
-                                onfocus="this.style.borderColor='#d97706'" onblur="this.style.borderColor='#d1d5db'">
-                            <option value="">— Select a meeting group —</option>
-                            @foreach($groups as $group)
-                                <option value="{{ $group->id }}" {{ old('group_id') == $group->id ? 'selected' : '' }}>
-                                    {{ $group->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+                    @if($preselectedGroupId)
+                        @php $preselectedGroup = $groups->firstWhere('id', $preselectedGroupId); @endphp
+                        <input type="hidden" name="group_id" value="{{ $preselectedGroupId }}">
+                        @if($preselectedGroup)
+                            <div style="margin-bottom:20px;">
+                                <label style="display:block; font-size:14px; font-weight:600; color:#374151; margin-bottom:6px;">Meeting</label>
+                                <div style="border:1px solid #d1d5db; border-radius:8px; padding:10px 14px; font-size:14px; background:#f9fafb; color:#374151;">
+                                    {{ $preselectedGroup->name }}
+                                </div>
+                            </div>
+                        @endif
+                    @else
+                        <div style="margin-bottom:20px;">
+                            <label style="display:block; font-size:14px; font-weight:600; color:#374151; margin-bottom:6px;">
+                                Assign to Meeting <span style="color:#dc2626;">*</span>
+                            </label>
+                            <select name="group_id" required
+                                    style="width:100%; border:1px solid #d1d5db; border-radius:8px; padding:10px 14px; font-size:14px; box-sizing:border-box; background:white; outline:none;"
+                                    onfocus="this.style.borderColor='#d97706'" onblur="this.style.borderColor='#d1d5db'">
+                                <option value="">— Select a meeting group —</option>
+                                @foreach($groups as $group)
+                                    <option value="{{ $group->id }}" {{ old('group_id') == $group->id ? 'selected' : '' }}>
+                                        {{ $group->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
 
                     <div style="margin-bottom:28px;">
                         <label style="display:block; font-size:14px; font-weight:600; color:#374151; margin-bottom:6px;">
