@@ -22,10 +22,10 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', [AdminDashboardController::class, 'index'])
-    ->middleware(['auth', 'verified', 'admin'])
+    ->middleware(['auth', 'admin'])
     ->name('dashboard');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
