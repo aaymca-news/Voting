@@ -147,7 +147,7 @@
                     </div>
 
                     {{-- Members list --}}
-                    <div style="padding:8px 0;">
+                    <div style="padding:8px 0; max-height:360px; overflow-y:auto;">
                         @forelse($group->users as $user)
                             <div style="padding:10px 20px; border-bottom:1px solid #f8fafc;">
                                 <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
