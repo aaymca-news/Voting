@@ -82,7 +82,7 @@
             </div>
 
             {{-- ══ MEETING MEMBERS (collapsible) ══ --}}
-            <div style="background:white; border:1px solid #e2e8f0; border-radius:14px; overflow:hidden; margin-bottom:20px;">
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:14px; margin-bottom:20px;">
 
                 {{-- Toggle header --}}
                 <button type="button"
